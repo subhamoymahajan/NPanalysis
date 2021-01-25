@@ -34,9 +34,6 @@ import re
 import glob
 small=1E-6
 
-
-
-###################FUNCTIONS###########################
 def import_constants(path):
     sys.path.insert(1,path)
     global ndna, npei, contact_dist, Qpei, Qdna, adna, apei, phos_ids, nitr_ids, pei, dna
@@ -187,13 +184,11 @@ def gen_avgsize(avg_step,outname,times,dt=0.2,tstart=0,cluster_pickle='cluster.p
             #print((t+1)*dt)
             navg=float(ndna*avg_step)/float(nclust) #Number average cluster size =  sum(DNAs)/sum(Clusters)= ndna/nclusters
             wavg=wavg/(ndna*float(avg_step)) #Weight average cluster size = sum(DNA^2)/sum(DNA) = sum(DNA^2)/ndna
-    #The above equations differ from comments because nclust is sum over different time so nclusters=nclust/avg_step wavg=sum(DNA^2)*avg_step
             w.write(str(round(tstart+(t+1)*dt - avg_step*dt*0.5,2))+' '+str(round(navg,3))+' '+str(round(wavg,3))+'\n')
     w.close()
     print("avgsize done")
 
 def run_ncNP_s(time1,time2,cluster_pickle='cluster.pickle'):#Generates average number of NPs and charge of NPs for a given size of NP. ??
-    #Size = Number of DNAs in a NP
     nNP_s=np.zeros(ndna) # Number of NPs for a given size
     cNP_s=np.zeros(ndna) #Charge of NPs for a given size 
     clusters=nx.read_gpickle(cluster_pickle)
@@ -238,7 +233,6 @@ def gen_ncNP_s(times,bins,outname,cluster_pickle='cluster.pickle'):#Generates a 
     
     print("Avg nNP_s done")
 
-################################Finished so far######################
 def w2f_cluster(outheader='cluster',cluster_pickle='cluster.pickle'):
     cluster=nx.read_gpickle(cluster_pickle)
     for t in range(len(cluster)):
