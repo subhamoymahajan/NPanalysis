@@ -149,7 +149,7 @@ def calc_Rg2(pos,atoms,mass):
     
     return Rg2
 
-def calc_Rh_Rg(Rh_file='Rh.dat', Rg2_file='Rg.dat', inGRO='New',\
+def calc_Rh_Rg(Rh_pickle='Rh.pickle', Rg2_pickle='Rg.pickle', inGRO='New',\
     mass_pickle='mass.pickle', cluster_pickle='cluster.pickle', main_mol = 0, \
     ndx_pickle='molndx.pickle', sep=' '):
     """Calculates hydrodynamic radius (Rh) and square of radius of gyration 
@@ -157,10 +157,10 @@ def calc_Rh_Rg(Rh_file='Rh.dat', Rg2_file='Rg.dat', inGRO='New',\
 
     Parameters
     ----------
-    Rh_file: str
-        Output filename for hydrodynamic radius. 
-    Rg2_file: str
-        Output filename for square of radius of gyraiton
+    Rh_pickle: str, optional
+        Filename to pickle hydrodynamic radius data. 
+    Rg2_pickle: str, optional
+        Filename to pickle square of radius of gyraiton data.
     inGRO: str, optional
         Starting file name of input Gromacs files. Files [infile][t].gro are
         read. The nanoparticles must be whole (across boundary). 
@@ -182,14 +182,14 @@ def calc_Rh_Rg(Rh_file='Rh.dat', Rg2_file='Rg.dat', inGRO='New',\
 
     Writes
     ------
-    [Rh_file]:
-        First line is a comment. Each subsequent line contains time, average 
-        hydrodynamic radius, and standard error. Not written if the value of
-        [Rh_file] is none. 
-    [Rg2_file]:
-        First line is a comment. Each subsequent line contains time, average 
-        radius of gyration, and standard error. Not written if the value of 
-        [Rg2_file] is none.
+    [Rh_pickle]: 2D list of floats
+        Axis 0 and 1 represents time and cluster ID. Matches the order of 
+        pickled cluster data (clusters followed by free main molecule). 
+        Contains hydrodynamic radius. 
+    [Rg2_pickle]: 2D list of floats
+        Axis 0 and 1 represents time and cluster ID. Matches the order of 
+        pickled cluster data (clusters followed by free main molecule). 
+        Contains square of radius of gyraiton.
     """
 
     constants=nx.read_gpickle('constants.pickle')
@@ -206,87 +206,29 @@ def calc_Rh_Rg(Rh_file='Rh.dat', Rg2_file='Rg.dat', inGRO='New',\
     cluster=nx.read_gpickle(cluster_pickle)
     times=len(cluster)
 
-    if Rh_file !=None:
-        w=open(Rh_file,'w')
-        w.write("# Main molecule = "+str(main_name)+'\n')
-        w.write("#time"+sep+"hydodynamic_radius_of_clusters\n")
-    if Rg2_file !=None:
-        w1=open(Rg2_file,'w')
-        w1.write("# Main molecule = "+str(main_name)+'\n')
-        w1.write("#time"+sep+"square_of_radius_of_gyration_of_clusters\n")
-     
+    if Rh_pickle!=None:
+        Rh_data=[]
+    if Rg2_pickle!=None:
+        Rg2_data=[]
+ 
     for t in range(times):
         print("Reading: "+inGRO+str(t)+".gro     ",end="\r")
         pos,box,text=gmx.read_gro(inGRO+str(t)+'.gro')
         catoms=gmx.get_NPatomIDs(cluster[t],ndx,dna_name,pei_name,main_mol) #Change function.
-        Rhs=calc_Rh_t(pos,catoms)
-        Rg2s=calc_Rg2_t(pos,catoms,mass)
-        #Writing Rh
-        if Rh_file != None:
-            w.write(str(t))
-            for Rh in Rhs:
-                w.write(sep+str(round(Rh,5)))
-            w.write('\n')
-        #Writing Rg
-        if Rg2_file != None:
-            w1.write(str(t))
-            for Rg2 in Rg2s:
-                w1.write(sep+str(round(Rg2,10)))
-            w1.write('\n')
+        if Rh_pickle!=None:
+            Rhs=calc_Rh_t(pos,catoms)
+            Rh_data.append(Rhs)
+        if Rg2_pickle!=None:
+            Rg2s=calc_Rg2_t(pos,catoms,mass)
+            Rg2_data.append(Rg2s)
     foo="Writing: "
-    if Rh_file !=None:
-        foo+=Rh_file+" "
-        w.close()
-    if Rg2_file !=None:
-        foo+=Rg2_file
-        w1.close()
-    print("\nWriting: "+foo)
-
-def pickle_rad(filename,picklename,comment=["@","#"],ign_col=1, \
-    datatype='float',sep=' '):
-    """Pickles radius data (Rh or Rg) after reading it from a file
-
-    Parameters
-    ----------
-    filename: str
-        Name of the file containing radius data.
-    picklename: str
-        Name out the output pickle file. 
-    comment: 1D array of str characters, optional. 
-        Ignores lines starting with characters present in this string. 
-        (default value is ["@", "#"])
-    ign_col: int, optional
-        First [ign_col] columns are ignored. (default is 1)
-    datatype: str, optional
-        Stores the data type for pickling. Can take values 'float' or 'int'.
-        (default is 'float')
-    sep: str, optional
-        A string that separates data. (default value is ' ')
-    
-    Writes
-    ------
-    [picklename]: pickled 2D list.
-         The axis 0 represents time, and the axis 1 represents the cluster ID.
-         The value of the list is the radius.
-    """
-    print("Writing: "+filename)
-    f=open(filename,'r')
-    data=[]
-    for lines in f:
-        foo=(lines.strip()).split(sep)
-        if foo[0][0] in comment:
-            continue
-        if len(lines)==0:
-            continue
-        data_line=[]
-        for i in range(ign_col,len(foo)):
-            if datatype=='float':
-                data_line.append(float(foo[i]))
-            elif datatype=='int':
-                data_line.append(int(foo[i]))        
-
-        data.append(data_line)
-    nx.write_gpickle(data,picklename)
+    if Rh_pickle !=None:
+        foo+=Rh_pickle+" "
+        nx.write_gpickle(Rh_data,Rh_pickle)
+    if Rg2_pickle !=None:
+        foo+=Rg2_pickle
+        nx.write_gpickle(Rg2_data,Rg2_pickle)
+    print("\n"+foo)
 
 def gen_rad_avg(rad_pickle,avg_len,outname,sep=' ',time_pickle='time.pickle', \
     sqrt=False):
