@@ -38,7 +38,7 @@ Output the mass data:
 gmx dump -s md_1.tpr > tpr.dump
 ```
 
-### Calculate connection matrix
+### Prepare and read constants.
 
 Generate a constants file 'constants.dat':
 
@@ -74,7 +74,9 @@ Read and pickle mass information:
 NPa.gmx.pickle_mass('tpr.dump')
 ```
 
-Calculate connection matrix in 'connected.pickle': This can be calculated from any gromacs strucrture files, molecules does not need to be whole.
+### Calculate connection matrix
+
+This can be calculated from any gromacs strucrture files, molecules does not need to be whole.
 
 ```python
 NPa.connMat.gro2connected(inGRO='Whole/DP')
