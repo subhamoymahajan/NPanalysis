@@ -19,8 +19,10 @@ NPanalysis can be installed as a module using
 ```bash
 python setup.py install --user
 ```
-<----
+
 ##Quickstart
+
+For details check Tutorials.
 
 ### Prepare Gromacs files
 
@@ -72,19 +74,66 @@ Read and pickle mass information:
 NPa.gmx.pickle_mass('tpr.dump')
 ```
 
-Calculate connection matrix:
+Calculate connection matrix in 'connected.pickle': This can be calculated from any gromacs strucrture files, molecules does not need to be whole.
 
 ```python
 NPa.connMat.gro2connected(inGRO='Whole/DP')
 ```
 Calculate PEI roles:
 
-Average over 50 timesteps and output to 'PEI\_roles.dat'
+Average over 50 timesteps and output to 'PEI\_roles.dat' and 'PEI\_roles2.dat'. **get\_roles()** calculates the number of PEIs in free, peripheral, bridging PEIs. **get\_roles2()** calculates the average number of bridging PEIs between a pair of bridged DNAs and total number of bridged DNAs.
 
 ```python
 NPa.connMat.get_roles(50,'PEI_roles.dat')
-NPa.connMat.get_roles2(50,'PEI')
+NPa.connMat.get_roles2(50,'PEI_roles2.dat')
 ```
------>
 
+### Determining clusters (nanoparticles)
 
+Calculates clusters in 'cluster.pickle': connection matrix has to determined before this calculation.
+
+```python
+NPa.cluster.gen_cluster()
+```
+
+Calculate cluster properties: Number average size, weight average size, number of nanoparticles as a function of number average size, charge of nanoparticles as a function of number average size. 
+
+```python
+NPa.cluster.gen_avgsize(50,'avgsize.dat')
+NPa.cluster.gen_ncNP_s(3,'num_charge_NPs_size.dat')
+```
+
+### Make nanoparticles whole
+
+Input gromacs files must have whole molecules, connection matrix and clusters has to be calculated.
+```python
+NPa.gmx.make_NPwhole(inGRO='Whole/DP',outGRO='NPwhole/DP')
+```
+
+### Radius of gyration and hydrodynamic radius
+
+Calculate radii for each cluster at different timestep: radius of gyration is stored as square. The input gromacs must have whole nanoparticles. Clusters has to be known.
+
+```python
+NPa.radius.calc_Rh_Rg(Rh_file='Rh.dat',Rg2_file='Rg2.dat',inGRO='NPwhole/DP')
+```
+
+Pickle radii:
+```python
+NPa.radius.pickle_rad('Rh.dat','Rh.pickle')
+NPa.radius.pickle_rad('Rg2.dat','Rg2.pickle')
+```
+
+Calculate average radii: the average is performed over every 50 timesteps. Square root of average and standard error is taken for radius of gyrtion. 
+
+``python
+NPa.radius.gen_rad_avg('Rh.pickle',50,'avg_Rh.dat')
+NPa.radius.gen_rad_avg('Rg2.pickle',50,'avg_Rg.dat',sqrt=True)
+```
+
+Calculate average radii per number average size: the average is calculated over timestems 200 throug 251 (not included). Square root of average and standard error is taken for radius of gyration.
+
+```python
+NPa.radius.gen_rad_per_size('Rh.pickle','Rh_size.dat',200,251)
+NPa.radius.gen_rad_per_size('Rg2.pickle','Rg_size.dat',200,251,sqrt=True)
+``` 
