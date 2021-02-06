@@ -117,13 +117,7 @@ NPa.gmx.make_NPwhole(inGRO='Whole/DP',outGRO='NPwhole/DP')
 Calculate radii for each cluster at different timestep: radius of gyration is stored as square. The input gromacs must have whole nanoparticles. Clusters has to be known.
 
 ```python
-NPa.radius.calc_Rh_Rg(Rh_file='Rh.dat',Rg2_file='Rg2.dat',inGRO='NPwhole/DP')
-```
-
-Pickle radii:
-```python
-NPa.radius.pickle_rad('Rh.dat','Rh.pickle')
-NPa.radius.pickle_rad('Rg2.dat','Rg2.pickle')
+NPa.radius.calc_Rh_Rg(Rh_pickle='Rh.pickle',Rg2_pickle='Rg2.pickle',inGRO='NPwhole/DP')
 ```
 
 Calculate average radii: the average is performed over every 50 timesteps. Square root of average and standard error is taken for radius of gyrtion. 
