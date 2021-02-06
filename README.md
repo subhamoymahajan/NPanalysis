@@ -38,7 +38,7 @@ Output the mass data:
 gmx dump -s md_1.tpr > tpr.dump
 ```
 
-### Prepare and read constants.
+### Prepare and read constants
 
 Generate a constants file 'constants.dat':
 
@@ -128,7 +128,7 @@ NPa.radius.pickle_rad('Rg2.dat','Rg2.pickle')
 
 Calculate average radii: the average is performed over every 50 timesteps. Square root of average and standard error is taken for radius of gyrtion. 
 
-``python
+```python
 NPa.radius.gen_rad_avg('Rh.pickle',50,'avg_Rh.dat')
 NPa.radius.gen_rad_avg('Rg2.pickle',50,'avg_Rg.dat',sqrt=True)
 ```
