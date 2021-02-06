@@ -20,7 +20,7 @@ NPanalysis can be installed as a module using
 python setup.py install --user
 ```
 
-##Quickstart
+## Quickstart
 
 For details check Tutorials.
 
@@ -38,7 +38,7 @@ Output the mass data:
 gmx dump -s md_1.tpr > tpr.dump
 ```
 
-### Calculate connection matrix
+### Prepare and read constants
 
 Generate a constants file 'constants.dat':
 
@@ -74,7 +74,9 @@ Read and pickle mass information:
 NPa.gmx.pickle_mass('tpr.dump')
 ```
 
-Calculate connection matrix in 'connected.pickle': This can be calculated from any gromacs strucrture files, molecules does not need to be whole.
+### Calculate connection matrix
+
+This can be calculated from any gromacs strucrture files, molecules does not need to be whole.
 
 ```python
 NPa.connMat.gro2connected(inGRO='Whole/DP')
@@ -115,18 +117,12 @@ NPa.gmx.make_NPwhole(inGRO='Whole/DP',outGRO='NPwhole/DP')
 Calculate radii for each cluster at different timestep: radius of gyration is stored as square. The input gromacs must have whole nanoparticles. Clusters has to be known.
 
 ```python
-NPa.radius.calc_Rh_Rg(Rh_file='Rh.dat',Rg2_file='Rg2.dat',inGRO='NPwhole/DP')
-```
-
-Pickle radii:
-```python
-NPa.radius.pickle_rad('Rh.dat','Rh.pickle')
-NPa.radius.pickle_rad('Rg2.dat','Rg2.pickle')
+NPa.radius.calc_Rh_Rg(Rh_pickle='Rh.pickle',Rg2_pickle='Rg2.pickle',inGRO='NPwhole/DP')
 ```
 
 Calculate average radii: the average is performed over every 50 timesteps. Square root of average and standard error is taken for radius of gyrtion. 
 
-``python
+```python
 NPa.radius.gen_rad_avg('Rh.pickle',50,'avg_Rh.dat')
 NPa.radius.gen_rad_avg('Rg2.pickle',50,'avg_Rg.dat',sqrt=True)
 ```
