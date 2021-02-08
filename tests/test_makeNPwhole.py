@@ -21,7 +21,7 @@ class TestConnections(unittest.TestCase):
         NPa.connMat.gro2connected(inGRO='New/New',ndx_pickle='data/molndx.pickle', \
             connected_pickle='connected_2.pickle', time_shift=0, time_fac=1, \
             mindist_pickle='mindist_2.pickle', time_pickle='time_2.pickle')
-        os.system('rm -r Whole New')
+        os.system('rm -r Whole')
         Nt,Nd,Np=(self.connected).shape
         connected_2=nx.read_gpickle('connected_2.pickle')
         Nt_2,Nd_2,Np_2=connected_2.shape

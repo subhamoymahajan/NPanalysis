@@ -189,7 +189,7 @@ def calc_Rh_Rg(Rh_pickle='Rh.pickle', Rg2_pickle='Rg.pickle', inGRO='New',\
     [Rg2_pickle]: 2D list of floats
         Axis 0 and 1 represents time and cluster ID. Matches the order of 
         pickled cluster data (clusters followed by free main molecule). 
-        Contains square of radius of gyraiton.
+        Contains square of radius of gyration.
     """
 
     constants=nx.read_gpickle('constants.pickle')

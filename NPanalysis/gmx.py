@@ -150,7 +150,7 @@ def pickle_mass(filename='tprdump',mass_pickle='mass.pickle'):
         raise Exception('Number of atoms from gmx dump not equal to mass')
     mass=np.array(mass)
     nx.write_gpickle(mass,mass_pickle)
- 
+
 def read_gro(filename): 
     """Reads a Gromacs structure file
 
