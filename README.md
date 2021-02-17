@@ -12,7 +12,7 @@ NP(nanoparticle)analysis is a tool to analyze nanoparticle properties in all-ato
 7. Radius of gyration, and hydrodynamic radius of nanoparticle as a function of time
 8. Radius of gyration, and hydrodynamic radius of nanoparticle as a function of size
 
-This toolbox is based on published word:
+This toolbox is based on published word:    
 [1] Mahajan S., and Tang T., Polyethylenimine–DNA Ratio Strongly Affects Their Nanoparticle Formation: A Large-Scale Coarse-Grained Molecular Dynamics Study, *J. Phys. Chem. B*, **2019**, 123, 45, 9629-9640, DOI: [10.1021/acs.jpcb.9b07031](https://pubs.acs.org/doi/abs/10.1021/acs.jpcb.9b07031)
 
 ## Installation
