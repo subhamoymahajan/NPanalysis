@@ -141,3 +141,11 @@ Calculate average radii per number average size: the average is calculated over 
 NPa.radius.gen_rad_per_size('Rh.pickle','Rh_size.dat',200,251)
 NPa.radius.gen_rad_per_size('Rg2.pickle','Rg_size.dat',200,251,sqrt=True)
 ``` 
+# Contributors
+1. Subhamoy Mahajan, PhD student, Mechanical Engineering, University of Alberta, Edmonton, Canada (will graduate by Sep, 2021)
+2. Tian Tang, Professor, Mechanical Engineering, University of Alberta, Edmonton, Canada 
+
+# Funding Sources
+This research was funded by Natural Science and Engineering Research Council of Canada through Tian Tang. My research was also funded by several scholarships, Mitacs Globalink Graduate Fellowship (2016-2019), RR Gilpin Memorial Scholarship (2019), Alberta Graduate Excellence Scholarshipo (2020), Sadler Graduate Scholarship (2020).
+
+
