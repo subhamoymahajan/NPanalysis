@@ -119,3 +119,68 @@ def pickle_constants(filename, sep=' '):
     nx.write_gpickle(constants,'constants.pickle')
     f.close()
 
+def cat_pickles(data_fname,sep):
+    """ Concatanates pickled value.
+
+    Parameters
+    ----------
+    data_fname: str
+        File containing pickled filenames that will be concatanated. Last line
+        contains the output pickled filenames. First column must be time.  
+    sep: str
+        The separator used in the data_fname.
+        
+    Writes
+    ------
+        Multiple pickled files.
+    """
+    f=open(data_fname,'r')
+    fnames=[]
+    for lines in f:
+        if len(lines)==0:
+            continue
+        if lines[0]=='#' or lines[0]=='@':
+            continue
+        foo=lines.strip()
+        foo=foo.split(sep)
+        fnames.append(foo)
+
+    data_t=nx.read_gpickle(fnames[0][0])
+    for i in range(1,len(fnames)-1):
+        data_new=nx.read_gpickle(fnames[i][0])
+        print(fnames[i][0])
+        if type(data_t)==np.ndarray:
+            data_t=np.concatenate((data_t,data_new),axis=0)
+        if type(data_t)==list:
+            data_t+=data_new
+    print(len(data_t))
+    #Time only increases monotonically. Remove any repeating time or it t2<t1.
+    remove_idx=[]
+    max_t=data_t[0]
+    for i in range(1,len(data_t)):
+        if not data_t[i]>max_t:
+            remove_idx.append(i) #Add the index to remove later.
+        else:
+            max_t=data_t[i]
+
+    remove_idx=sorted(remove_idx,reverse=True)
+    print(remove_idx)
+    #Removing the last item first wont change the idx that needs to be removed.
+    for j in range(len(remove_idx)):
+        data_t=np.delete(data_t,(remove_idx[j]),axis=0)
+    nx.write_gpickle(data_t,fnames[len(fnames)-1][0])
+
+    #Concatenating other files.
+    for j in range(1,len(fnames[0])):
+        data_i=nx.read_gpickle(fnames[0][j])
+        for i in range(1,len(fnames)-1):
+            print(fnames[i][j])
+            data_i2=nx.read_gpickle(fnames[i][j])
+            if type(data_i)==np.ndarray: #connected, time
+                data_i=np.concatenate((data_i,data_i2),axis=0)
+            if type(data_i)==list: #cluster, Rh, Rg2
+                data_i+=data_i2
+        #removing idxs
+        for i in range(len(remove_idx)):
+            data_i=np.delete(data_i,(remove_idx[i]),axis=0)
+        nx.write_gpickle(data_i,fnames[len(fnames)-1][j])
