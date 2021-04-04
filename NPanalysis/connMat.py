@@ -341,3 +341,29 @@ def get_roles2(avg_step, connected_pickle='connected.pickle', mol = 0, \
             w.write(str(round(tavg,4)) + sep + \
                 str(round(avg_bri,4)) + sep + str(round(m2m,4)) + '\n')
     w.close()   
+def get_role_conversion(connected_pickle='connected.pickle', mol=1, \
+    outname='role_conv.dat',sep=' '):
+    connected=nx.read_gpickle(connected_pickle)
+    consts=connected.shape
+    role_conv=np.zeros((3,3),dtype=int)
+    # 0,1,2 implies free, peripheral, and bridging
+    # role_conv[i,j] implies conversion from i-> j
+    # conversions i->i (diagonal terms) should be ignored. 
+    roles=np.sum(connected,axis=2-mol)
+
+    for t in range(consts[0]):
+        for m in range(consts[1+mol]):
+            if roles[t,m]>1:
+                roles[t,m]=2
+    for t in range(consts[0]-1):
+        for m in range(consts[1+mol]):
+            if roles[t+1,m]!=roles[t,m]:
+                role_conv[roles[t,m],roles[t+1,m]]+=1
+    w=open(outname,'w')
+    w.write('#u->p\tp->b\tu->b\n')
+    w.write(str(role_conv[0,1])+sep+str(role_conv[1,2])+sep+\
+            str(role_conv[0,2])+'\n')
+    w.write('#p->u\tb->p\tb->u\n')
+    w.write(str(role_conv[1,0])+sep+str(role_conv[2,1])+sep+\
+            str(role_conv[2,0])+'\n')
+    w.close()
