@@ -137,12 +137,10 @@ def calc_Rg2(pos,atoms,mass):
     mass_atoms=mass[atoms]
     Mtot=np.sum(mass_atoms)
     com=np.zeros(3)
-    print('len mass_atoms',len(mass_atoms))
     for i in range(len(mass_atoms)):
         for j in range(3):
             com[j]+=mass_atoms[i]*pos_atoms[i,j]
     com=com/Mtot
-    print('com',com)
     Rg2=0
     for i in prange(len(mass_atoms)):
         for j in range(3):
@@ -172,8 +170,6 @@ def calc_MOI(pos, atoms, mass):
     pos_atoms=pos[atoms,:]
     mass_atoms=mass[atoms]
     Mtot=np.sum(mass_atoms)
-    print('pos',pos_atoms)
-    print('mass',mass_atoms)
    
     com=np.zeros(3)
     for i in range(len(mass_atoms)):
@@ -239,11 +235,9 @@ def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
     for p in cluster[1]:
         atoms+=ndx[pname+str(p)]
     atoms=np.array(atoms)
-    print('atoms:',atoms)
     MOI=calc_MOI(pos, atoms, mass)
     eig,eigv=np.linalg.eig(MOI)
     eig=sorted(eig)
-    print('eig',eig)
     #Quick reference: https://en.wikipedia.org/wiki/Gyration_tensor
     #Please look into detailed references and cite them (not the wiki)
     b=eig[2]-0.5*(eig[0]+eig[1]) #asphericity
