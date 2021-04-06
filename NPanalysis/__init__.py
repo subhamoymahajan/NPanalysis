@@ -148,12 +148,11 @@ def cat_pickles(data_fname,sep):
     data_t=nx.read_gpickle(fnames[0][0])
     for i in range(1,len(fnames)-1):
         data_new=nx.read_gpickle(fnames[i][0])
-        print(fnames[i][0])
         if type(data_t)==np.ndarray:
             data_t=np.concatenate((data_t,data_new),axis=0)
         if type(data_t)==list:
             data_t+=data_new
-    print(len(data_t))
+    print('Data has '+str(len(data_t))+' indices')
     #Time only increases monotonically. Remove any repeating time or it t2<t1.
     remove_idx=[]
     max_t=data_t[0]
@@ -164,7 +163,7 @@ def cat_pickles(data_fname,sep):
             max_t=data_t[i]
 
     remove_idx=sorted(remove_idx,reverse=True)
-    print(remove_idx)
+    print('Indices '+str(remove_idx)+' are removed')
     #Removing the last item first wont change the idx that needs to be removed.
     for j in range(len(remove_idx)):
         data_t=np.delete(data_t,(remove_idx[j]),axis=0)
@@ -174,7 +173,6 @@ def cat_pickles(data_fname,sep):
     for j in range(1,len(fnames[0])):
         data_i=nx.read_gpickle(fnames[0][j])
         for i in range(1,len(fnames)-1):
-            print(fnames[i][j])
             data_i2=nx.read_gpickle(fnames[i][j])
             if type(data_i)==np.ndarray: #connected, time
                 data_i=np.concatenate((data_i,data_i2),axis=0)
