@@ -404,7 +404,8 @@ def run_ncNP_s(time1, time2, cluster_pickle='cluster.pickle', main_mol=0):
     nNP_s=np.divide(nNP_s,(time2-time1+1)) #Average the SDF over time.
     return nNP_s,cNP_s
 
-def gen_ncNP_s(bins, outname, cluster_pickle='cluster.pickle', main_mol=0, sep=' '):
+def gen_ncNP_s(bins, outname, cluster_pickle='cluster.pickle', main_mol=0, \
+    sep=' '):
     """Calculates the average number of nanoparticles and charge of 
        nanoparticles over the entire simulation by creating [bins] bins.
 
