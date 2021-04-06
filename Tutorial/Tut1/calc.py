@@ -1,5 +1,3 @@
-import sys
-sys.path.insert(0,'../../')
 import NPanalysis as NPa
 ##0.Preping system
 # write the file 'constants.dat'
