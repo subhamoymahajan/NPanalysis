@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
    name="NPanalysis",
-   version="1.1.0",
+   version="1.2.0",
    author="Subhamoy Mahajan",
    author_email="subhamoygithub@gmail.com",
    description="Analysis module for two-component nanoparticles",

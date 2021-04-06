@@ -75,7 +75,7 @@ def pickle_mindist(fileheader='mindist', mindist_pickle='mindist.pickle', \
     print("\nReading: "+fileheader+"*.xvg")
     for d in range(ndna):
         for p in range(npei):
-    	#Read all the mindist files which contains the minimum distance of each pair of DNA-PEIs at different time
+        #Read all the mindist files which contains the minimum distance of each pair of DNA-PEIs at different time
             f=open(fileheader+str(d)+"-"+str(p)+".xvg","r")
             t=0
             for lines in f:
@@ -236,7 +236,7 @@ def write_gro(filename,pos,texts):
         cnt+=1
     w.close()
 
-def get_NPatomIDs(clusters, ndx, dna_name, pei_name, main_mol): 
+def get_NPatomIDs(clusters, ndx, dna_name, pei_name, main_mol=0, NP_ID=None): 
     """Calculates the global IDs of atoms from a list of DNAs and PEIs molecule IDs.
     
     Parameters
@@ -257,30 +257,42 @@ def get_NPatomIDs(clusters, ndx, dna_name, pei_name, main_mol):
     main_mol: int, optional
         Chooses a main molecule to calculate size of nanoparticle. 0 represents
         DNA and 1 represents PEI. (default value is 0).
-
+    NP_ID: int, optional
+        Index of a specific NP for which the atom IDs are desired. Default value 
+        is None. At default setting atom ID for all NPs will be returned
     Returns
     -------
     atoms: array of integers
        List of global IDs of atom 
     """
     atoms=[]
-    for i in range(len(clusters)-2):
-        atoms_c=[]
-        for d in clusters[i][0]:
-            atoms_c+=ndx[dna_name+str(d)]
-        for p in clusters[i][1]:
-            atoms_c+=ndx[pei_name+str(p)]
-        atoms.append(np.array(atoms_c))
-    if main_mol==0: #dna
-        for d in clusters[-2][0]:
-            atoms.append(np.array(ndx[dna_name+str(d)])) 
-    if main_mol==1: #pei
-        for p in clusters[-1][1]:
-            atoms.append(np.array(ndx[pei_name+str(p)])) 
+    if NP_ID==None:
+        for i in range(len(clusters)-2):
+            atoms_c=[]
+            for d in clusters[i][0]:
+                atoms_c+=ndx[dna_name+str(d)]
+            for p in clusters[i][1]:
+                atoms_c+=ndx[pei_name+str(p)]
+            atoms.append(np.array(atoms_c))
+        if main_mol==0: #dna
+            for d in clusters[-2][0]:
+                atoms.append(np.array(ndx[dna_name+str(d)])) 
+        if main_mol==1: #pei
+            for p in clusters[-1][1]:
+                atoms.append(np.array(ndx[pei_name+str(p)])) 
+    else:
+        if type(NP_ID)!=int:
+            raise Exception('NP_ID must be integer')
+        for d in clusters[NP_ID][0]:
+            atoms+=ndx[dna_name+str(d)]
+        for p in clusters[NP_ID][1]:
+            atoms+=ndx[pei_name+str(p)] 
+        atoms=np.array(atoms)
     return atoms
 
 def make_NPwhole(inGRO='DP',outGRO='New', cluster_pickle='cluster.pickle', \
-    connected_pickle='connected.pickle', ndx_pickle='molndx.pickle'):
+    connected_pickle='connected.pickle', ndx_pickle='molndx.pickle', \
+    prefix=''):
     """Updates .gro files to make nanoparticles whole, for a tim
   
     Parameters
@@ -299,6 +311,8 @@ def make_NPwhole(inGRO='DP',outGRO='New', cluster_pickle='cluster.pickle', \
     ndx_pickle: str, optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
         more details. (default value is 'molndx.pickle') 
+    prefix: str
+        Prefix for DNA and PEI name. (default value is '')
 
     Writes
     ------
@@ -307,8 +321,8 @@ def make_NPwhole(inGRO='DP',outGRO='New', cluster_pickle='cluster.pickle', \
         Nanoparticles are made whole.  
     """
     constants=nx.read_gpickle('constants.pickle')
-    dna_name=constants['dna_name']
-    pei_name=constants['pei_name']
+    dna_name=prefix+constants['dna_name']
+    pei_name=prefix+constants['pei_name']
     DP_name=[dna_name, pei_name]
     contact_dist=constants['contact_dist']
     pbc=np.array(constants['pbc'])
@@ -381,7 +395,58 @@ def make_NPwhole(inGRO='DP',outGRO='New', cluster_pickle='cluster.pickle', \
         print('Writing: '+outGRO+str(t)+'.gro     ',end="\r")
         write_gro(outGRO+str(t)+'.gro',pos,texts)
     print("\n")
+
+def gen_index_charge(ndx_pickle='Qndx.pickle',prefix=''):
+    """Calculates global atom IDs of atoms present in each DNA and PEI molecule.
        
+    Assumes the index of DNAs start from [snda], having [ndna] DNA molecules, 
+    each having [adna] beads with charged beads given by [phos_ids]. Similarly, 
+    index of PEIs start from [spei], having [npei] PEI molecules, each having 
+    [apei] beads with charged beads given by [nitr_ids]
+
+    Parameters
+    ----------
+    ndx_pickle: str, optional
+        Filename of the output pickled file. (default value is 'Qndx.pickle')
+    prefix: str
+        Prefix for DNA and PEI name. (default value is '')
+
+    Writes
+    ------
+    [ndx_pickle]: pickled dictionary.
+        Contains a dictionary with molecule name along with their IDs 
+        ("[Molecule Name][ID]") as keys and the value is a list of global IDs 
+        of atoms in the molecule. 
+    """
+    print("Writing: "+ndx_pickle)
+    constants=nx.read_gpickle('constants.pickle')
+    ndna=constants['ndna']
+    adna=constants['adna']
+    sdna=constants['sdna']
+    phos_ids=constants['phos_ids']
+    dna_name=prefix+constants['dna_name']
+
+    npei=constants['npei']
+    apei=constants['apei']
+    spei=constants['spei']
+    nitr_ids=constants['nitr_ids']
+    pei_name=prefix+constants['pei_name'] 
+
+    ndx={}
+    for d in range(ndna):
+        ndx[dna_name+str(d)]=[]
+        for di in phos_ids:
+            # Saved in python format, should be increased by 1 for Gromacs use.
+            ndx[dna_name+str(d)].append(d*adna+sdna+di-1) 
+    
+    for p in range(npei):
+        ndx[pei_name+str(p)]=[]
+        for pi in nitr_ids:
+            # Saved in python format, should be increased by 1 for Gromacs use.
+            ndx[pei_name+str(p)].append(p*apei+spei+pi-1) 
+    
+    nx.write_gpickle(ndx,ndx_pickle)
+      
 def gen_index_mol(ndx_pickle='molndx.pickle'):
     """Calculates global atom IDs of atoms present in each DNA and PEI molecule.
        
@@ -389,7 +454,9 @@ def gen_index_mol(ndx_pickle='molndx.pickle'):
     each with [adna] atoms. Similarly, index of PEIs start from [spei], having 
     [npei] PEI molecules, each with [apei] atoms.
 
-    out_pickle: str, optional
+    Parameters 
+    ----------
+    ndx_pickle: str, optional
         Filename of the output pickled file. (default value is 'molndx.pickle')
 
     Writes
@@ -399,7 +466,7 @@ def gen_index_mol(ndx_pickle='molndx.pickle'):
         ("[Molecule Name][ID]") as keys and the value is a list of global IDs 
         of atoms in the molecule. 
     """
-    print("Writing: molndx.pickle")
+    print("Writing: "+ndx_pickle)
     constants=nx.read_gpickle('constants.pickle')
     ndna=constants['ndna']
     adna=constants['adna']
@@ -423,10 +490,10 @@ def gen_index_mol(ndx_pickle='molndx.pickle'):
             # Saved in python format, should be increased by 1 for Gromacs use.
             ndx[pei_name+str(p)].append(p*apei+spei+pi-1) 
     
-    nx.write_gpickle(ndx,'molndx.pickle')
+    nx.write_gpickle(ndx,ndx_pickle)
 
 
-def write_index_mol(outname,ndx_pickle='molndx.pickle'):
+def write_index_mol(outname,ndx_pickle='molndx.pickle',prefix=''):
     """Writes a Gromacs index file (“.ndx”) for each DNA and PEI molecules.
 
     It Assumes first 'ndna' molecules are DNAs followed by 'npei' PEIs. Each 
@@ -439,7 +506,8 @@ def write_index_mol(outname,ndx_pickle='molndx.pickle'):
     ndx_pickle: str, optional
         Filename of the pickled Gromacs index file. For details see 
         gmx.gen_index_mol(). (default value is 'molndx.pickle')
-
+    prefix: str
+        Prefix to the name of DNA and PEI. (default value is '')
     Writes
     ------
     [outname]: Gromacs .ndx file format
@@ -449,25 +517,23 @@ def write_index_mol(outname,ndx_pickle='molndx.pickle'):
         raise Exception('Index file should end with .ndx')
     print("Writing: "+outname)
     constants=nx.read_gpickle('constants.pickle')
-    pei_name=constants['pei_name']
-    dna_name=constants['dna_name']
+    pei_name=prefix+constants['pei_name']
+    dna_name=prefix+constants['dna_name']
     ndna=constants['ndna']
     npei=constants['npei']
-    adna=constants['adna']
-    apei=constants['apei']
 
     w=open(outname,"w")
     ndx=nx.read_gpickle(ndx_pickle)
     for i in range(ndna):
         w.write("[ "+dna_name+str(i)+" ]\n")
-        for j in range(adna):
+        for j in range(len(ndx[dna_name+str(i)])):
             w.write(str(ndx[dna_name+str(i)][j]+1)+' ')
             if (j+1)%20==0:
                 w.write('\n') 
         w.write('\n') 
     for i in range(npei):
         w.write("[ "+pei_name+str(i)+" ]\n")
-        for j in range(apei):
+        for j in range(len(ndx[pei_name+str(i)])):
             w.write(str(ndx[pei_name+str(i)][j]+1)+' ')
             if (j+1)%20==0:
                 w.write('\n') 
@@ -475,7 +541,7 @@ def write_index_mol(outname,ndx_pickle='molndx.pickle'):
     w.write("\n")
     w.close()
 
-def read_ndx(filename,ndx_pickle='molndx.pickle'):
+def read_ndx(filename,ndx_pickle='molndx.pickle',prefix=''):
     """Reads a index file and pickles it.
 
     Looks for groups with the name 'dna_name' and 'pei_name' mentioned in the 
@@ -487,6 +553,8 @@ def read_ndx(filename,ndx_pickle='molndx.pickle'):
         Name of the index file
     out_pickle: str, optional
         Filename of the output pickled file. (default value is 'molndx.pickle')
+    prefix: str
+        Prefix for DNA and PEI name. (default value is '')
 
     Writes
     ------
@@ -495,8 +563,8 @@ def read_ndx(filename,ndx_pickle='molndx.pickle'):
     """
     state=0 # 0 = reading molecule name, 1= reading atom ids.
     constants=nx.read_gpickle('constants.pickle')
-    dna_name=constants['dna_name']
-    pei_name=constants['pei_name']
+    dna_name=prefix+constants['dna_name']
+    pei_name=prefix+constants['pei_name']
     ndx={} 
     f=open(filename,'r')
     for lines in f:

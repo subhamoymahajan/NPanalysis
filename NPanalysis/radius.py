@@ -160,8 +160,7 @@ def calc_MOI(pos, atoms, mass):
         ID, and axis 1 is the direction.
     atoms: List of integers
         Contains global ID of atoms in the nanoparticle
-    mass: List of floats
-        Contains mass information of all atoms.
+    mass: numpy array 
     Returns
     -------
     MOI: 3x3 numpy ndarray of floats
@@ -200,7 +199,7 @@ def calc_MOI(pos, atoms, mass):
     return MOI
 
 def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
-    ndx_pickle='molndx.pickle'):
+    ndx_pickle='molndx.pickle', prefix=''):
     """ Calculates NP shape descriptors asphericitym, acylindricity, and 
         relative shape anisotropy for a NP.
     
@@ -221,11 +220,12 @@ def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
     ndx_pickle: str, optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
         more details. (default value is 'molndx.pickle')
+    prefix: str
+        Prefix for DNA and PEI name. (default value is '')
     """
     constants=nx.read_gpickle('constants.pickle')
-    pname=constants['pei_name']
-    dname=constants['dna_name']
-
+    pname=prefix+constants['pei_name']
+    dname=prefix+constants['dna_name']
     mass=nx.read_gpickle(mass_pickle)
     ndx=nx.read_gpickle(ndx_pickle)
     pos,box,text=gmx.read_gro(inGRO)
@@ -249,7 +249,7 @@ def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
 
 def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
     mass_pickle='mass.pickle', cluster_pickle='cluster.pickle', main_mol=0,
-    ndx_pickle='molndx.pickle'):
+    ndx_pickle='molndx.pickle', prefix=''):
     """ Calculates NP shape descriptors asphericitym, acylindricity, and 
         relative shape anisotropy for all NP at all time.
     
@@ -279,6 +279,8 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
     ndx_pickle: str, optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
         more details. (default value is 'molndx.pickle')
+    prefix: str
+        Prefix for DNA and PEI name. (default value is '')
         
     Writes
     ------
@@ -289,11 +291,10 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
 
     clusters=nx.read_gpickle(cluster_pickle)
     constants=nx.read_gpickle('constants.pickle')
-    mass=nx.read_gpickle(mass_pickle)
     ndx=nx.read_gpickle(ndx_pickle)
-
-    pname=constants['pei_name']
-    dname=constants['dna_name']
+    mass=nx.read_gpickle(mass_pickle)
+    pname=prefix+constants['pei_name']
+    dname=prefix+constants['dna_name']
     times=len(clusters)
     shape=[]
     for t in range(times):
@@ -316,7 +317,7 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
 
 def calc_Rh_Rg(Rh_pickle='Rh.pickle', Rg2_pickle='Rg.pickle', inGRO='New',\
     mass_pickle='mass.pickle', cluster_pickle='cluster.pickle', main_mol = 0, \
-    ndx_pickle='molndx.pickle', sep=' '):
+    ndx_pickle='molndx.pickle', sep=' ',prefix=''):
     """Calculates hydrodynamic radius (Rh) and square of radius of gyration 
        (Rg)
 
@@ -344,6 +345,8 @@ def calc_Rh_Rg(Rh_pickle='Rh.pickle', Rg2_pickle='Rg.pickle', inGRO='New',\
         more details. (default value is 'molndx.pickle')
     sep: str, optional
         A string that separates data. for CSV files use sep=','.
+    prefix: str
+        Prefix for DNA and PEI name. (default value is '')
 
     Writes
     ------
@@ -360,8 +363,8 @@ def calc_Rh_Rg(Rh_pickle='Rh.pickle', Rg2_pickle='Rg.pickle', inGRO='New',\
     constants=nx.read_gpickle('constants.pickle')
     ndna=constants['ndna']
     npei=constants['npei']
-    dna_name=constants['dna_name']
-    pei_name=constants['pei_name']
+    dna_name=prefix+constants['dna_name']
+    pei_name=prefix+constants['pei_name']
     if main_mol==0:
         main_name=dna_name
     elif main_mol==1:

@@ -32,7 +32,8 @@ small=1E-16
 
 def gro2connected(inGRO='DP',connected_pickle='connected.pickle',
     ndx_pickle='molndx.pickle', time_shift=0, time_fac=1, \
-    time_pickle='time.pickle', mindist_pickle='mindist.pickle'):
+    time_pickle='time.pickle', mindist_pickle='mindist.pickle',
+    prefix=''):
     """Convert .gro files to connection matrix and change required to make 
        molecules whole.
 
@@ -60,6 +61,8 @@ def gro2connected(inGRO='DP',connected_pickle='connected.pickle',
     mindist_pickle: str, optional
         Filename of save pickled minimum distance data. 
         (default value is 'mindist.pickle')
+    prefix: str, optional
+        Prefix for DNA and PEI name. (default value is '')
     Writes
     ------
     [connected_pickle]: pickled 3D numpy ndarry of bool. 
@@ -77,14 +80,13 @@ def gro2connected(inGRO='DP',connected_pickle='connected.pickle',
     constants=nx.read_gpickle('constants.pickle')
     ndna=constants['ndna']
     npei=constants['npei']
-    adna=constants['adna']
-    apei=constants['apei']
     pbc=np.array(constants['pbc'])
-    dna_name=constants['dna_name']
-    pei_name=constants['pei_name']
+    dna_name=prefix+constants['dna_name']
+    pei_name=prefix+constants['pei_name']
     contact_dist=constants['contact_dist']
-  
     ndx=nx.read_gpickle(ndx_pickle)
+    adna=len(ndx[dna_name+'0'])
+    apei=len(ndx[pei_name+'0']) 
     #Determine number of timesteps.
     times=0
     while os.path.exists(inGRO+str(times)+'.gro'):
@@ -224,7 +226,6 @@ def get_roles(avg_step, connected_pickle='connected.pickle', mol = 1, \
         Output file name. (default value is 'PEI_roles.dat')
     sep: str, optional
         A string that separates data elements. (default value is ' ') 
-
     Writes
     ------
     [outname]: txt file format
