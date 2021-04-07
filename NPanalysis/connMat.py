@@ -313,10 +313,20 @@ def get_roles2(avg_step, connected_pickle='connected.pickle', mol = 0, \
         of bridged DNA pairs.  
     """
     print("Writing: "+outname)
+    constants=nx.read_gpickle('constants.pickle')
+    dna_name=constants['dna_name']
+    pei_name=constants['pei_name']
+
     connected=nx.read_gpickle(connected_pickle)
     sim_time=nx.read_gpickle(time_pickle)
     const=connected.shape
     w=open(outname,"w")
+
+    if mol==1: #PEI
+        w.write("# Bridging molecule is "+pei_name+'\n')
+    elif mol==0: #DNA
+        w.write("# Bridging molecule is "+dna_name+'\n')
+
     w.write('#time'+sep+'average_number_of_bridges_between_pairs'+sep+ \
         'number_of_bridged_pairs\n')
     for t in range(int(const[0]/avg_step)*avg_step+1):
@@ -351,6 +361,10 @@ def get_role_conversion(connected_pickle='connected.pickle', mol=1, \
     # role_conv[i,j] implies conversion from i-> j
     # conversions i->i (diagonal terms) should be ignored. 
     roles=np.sum(connected,axis=2-mol)
+    constants=nx.read_gpickle('constants.pickle')
+    dna_name=constants['dna_name']
+    pei_name=constants['pei_name']
+
 
     for t in range(consts[0]):
         for m in range(consts[1+mol]):
@@ -361,6 +375,10 @@ def get_role_conversion(connected_pickle='connected.pickle', mol=1, \
             if roles[t+1,m]!=roles[t,m]:
                 role_conv[roles[t,m],roles[t+1,m]]+=1
     w=open(outname,'w')
+    if mol==1: #PEI
+        w.write("# Bridging molecule is "+pei_name+'\n')
+    elif mol==0: #DNA
+        w.write("# Bridging molecule is "+dna_name+'\n')
     w.write('#u->p\tp->b\tu->b\n')
     w.write(str(role_conv[0,1])+sep+str(role_conv[1,2])+sep+\
             str(role_conv[0,2])+'\n')

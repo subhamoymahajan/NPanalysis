@@ -180,7 +180,7 @@ def calc_MOI(pos, atoms, mass):
     for i in range(len(mass_atoms)):
         for j in range(3):
             I1[j]+=mass_atoms[i]*(pos_atoms[i,j]-com[j])**2
-    I1=I1/Mtot
+    I1=I1
 
     I2=np.zeros(3)
     # \sum [ m_i*(x_i-x_com)(y_i-y_com), m_i*(y_i-y_com)(z_i-z_com),
@@ -189,17 +189,61 @@ def calc_MOI(pos, atoms, mass):
         for j in range(3):
             I2[j]+=mass_atoms[i]*(pos_atoms[i,j]-com[j])* \
                   (pos_atoms[i,(j+1)%3]-com[(j+1)%3])
-    I2=I2/Mtot
+    I2=I2
 
     MOI=np.zeros((3,3))
     for i in range(3):
-        MOI[i,i]=I1[i] #Ixx, Iyy or Izz
-        MOI[i,(i+1)%3]=I2[i] #Ixy, Iyz, or Izx
-        MOI[(i+1)%3,i]=I2[i] #Iyz, Izy or Ixz
+        MOI[i,i]=I1[(i+1)%3]+I1[(i+2)%3] #Ixx, Iyy or Izz
+        MOI[i,(i+1)%3]=-I2[i] #Ixy, Iyz, or Izx
+        MOI[(i+1)%3,i]=-I2[i] #Iyz, Izy or Ixz
     return MOI
 
-def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
-    ndx_pickle='molndx.pickle', prefix=''):
+@njit(parallel=True)
+def calc_GyrT(pos, atoms):
+    """ Calculates moment of intertia tensor for a specific time.
+ 
+    Parameters
+    ----------
+    pos: 2D numpy array of floats
+        Contains position of all atoms in the system. Axis 0 is the global atom
+        ID, and axis 1 is the direction.
+    atoms: List of integers
+        Contains global ID of atoms in the nanoparticle
+    Returns
+    -------
+    GyrT: 3x3 numpy ndarray of floats
+        Gyration tensor for a specific time
+    """
+    pos_atoms=pos[atoms,:]
+    N=len(atoms)
+    cen=np.zeros(3)
+    for i in range(N):
+        for j in range(3):
+            cen[j]+=pos_atoms[i,j]
+    cen=cen/float(N)
+    I1=np.zeros(3)
+    # \sum [ (x_i-x_com)^2/N, (y_i-y_com)^2/N, (z_i-z_com)^2/N ]
+    for i in range(N):
+        for j in range(3):
+            I1[j]+=(pos_atoms[i,j]-cen[j])**2
+    I1=I1/float(N)
+
+    I2=np.zeros(3)
+    # \sum [ (x_i-x_com)(y_i-y_com)/N, (y_i-y_com)(z_i-z_com)/N,
+    #        (z_i-z_com)(x_i-x_com)/N ]
+    for i in range(N):
+        for j in range(3):
+            I2[j]+=(pos_atoms[i,j]-cen[j])*(pos_atoms[i,(j+1)%3]-cen[(j+1)%3])
+    I2=I2/float(N)
+
+    GyrT=np.zeros((3,3))
+    for i in range(3):
+        GyrT[i,i]=I1[i] #Ixx, Iyy or Izz
+        GyrT[i,(i+1)%3]=I2[i] #Ixy, Iyz, or Izx
+        GyrT[(i+1)%3,i]=I2[i] #Iyz, Izy or Ixz
+    return GyrT
+
+def NP_shape(cluster, inGRO='New.gro', ndx_pickle='molndx.pickle', prefix=''):
     """ Calculates NP shape descriptors asphericitym, acylindricity, and 
         relative shape anisotropy for a NP.
     
@@ -214,9 +258,6 @@ def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
         Starting file name of input Gromacs files. Files [infile][t].gro are
         read. The nanoparticles must be whole (across boundary). 
         (default value is 'New')
-    mass_pickle: str, optional
-        Filename containing pickled mass data. Contains a list of atom mass,
-        ordered according to the global ID of atoms. 
     ndx_pickle: str, optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
         more details. (default value is 'molndx.pickle')
@@ -226,7 +267,6 @@ def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
     constants=nx.read_gpickle('constants.pickle')
     pname=prefix+constants['pei_name']
     dname=prefix+constants['dna_name']
-    mass=nx.read_gpickle(mass_pickle)
     ndx=nx.read_gpickle(ndx_pickle)
     pos,box,text=gmx.read_gro(inGRO)
     atoms=[]
@@ -235,8 +275,8 @@ def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
     for p in cluster[1]:
         atoms+=ndx[pname+str(p)]
     atoms=np.array(atoms)
-    MOI=calc_MOI(pos, atoms, mass)
-    eig,eigv=np.linalg.eig(MOI)
+    GyrT=calc_GyrT(pos, atoms)
+    eig,eigv=np.linalg.eig(GyrT)
     eig=sorted(eig)
     #Quick reference: https://en.wikipedia.org/wiki/Gyration_tensor
     #Please look into detailed references and cite them (not the wiki)
@@ -248,8 +288,8 @@ def NP_shape(cluster, inGRO='New.gro', mass_pickle='mass.pickle', \
     print('relative shape anisotropy: '+str(round(k2,4)))
 
 def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
-    mass_pickle='mass.pickle', cluster_pickle='cluster.pickle', main_mol=0,
-    ndx_pickle='molndx.pickle', prefix=''):
+    cluster_pickle='cluster.pickle', main_mol=0, ndx_pickle='molndx.pickle', \
+    prefix=''):
     """ Calculates NP shape descriptors asphericitym, acylindricity, and 
         relative shape anisotropy for all NP at all time.
     
@@ -267,9 +307,6 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
         (default value is 'New')
     sep: str, optional
         A string that separates data. (default value is ' ')
-    mass_pickle: str, optional
-        Filename containing pickled mass data. Contains a list of atom mass,
-        ordered according to the global ID of atoms. 
     cluster_pickle: str, optional
         Filename which contains pickled cluster data. See cluster.gen_cluster()
         for more details. (default value is 'cluster.pickle')
@@ -292,7 +329,6 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
     clusters=nx.read_gpickle(cluster_pickle)
     constants=nx.read_gpickle('constants.pickle')
     ndx=nx.read_gpickle(ndx_pickle)
-    mass=nx.read_gpickle(mass_pickle)
     pname=prefix+constants['pei_name']
     dname=prefix+constants['dna_name']
     times=len(clusters)
@@ -302,8 +338,8 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
         catoms=gmx.get_NPatomIDs(cluster[t],ndx,dna_name,pei_name,main_mol)
         for c in len(catoms):
             shape_c=[]
-            MOI=calc_MOI(pos, catoms[c], mass)
-            eig,eigv=np.linalg.eig(MOI)
+            GyrT=calc_GyrT(pos, catoms[c])
+            eig,eigv=np.linalg.eig(GyrT)
             eig=sorted(eig)
             #Quick reference: https://en.wikipedia.org/wiki/Gyration_tensor
             #Please look into detailed references and cite them (not the wiki)
