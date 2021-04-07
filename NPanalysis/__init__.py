@@ -180,5 +180,8 @@ def cat_pickles(data_fname,sep):
                 data_i+=data_i2
         #removing idxs
         for i in range(len(remove_idx)):
-            data_i=np.delete(data_i,(remove_idx[i]),axis=0)
+            if type(data_i)==np.ndarray:
+                data_i=np.delete(data_i,(remove_idx[i]),axis=0)
+            if type(data_i)==list:
+                data_i.pop(remove_idx[i])
         nx.write_gpickle(data_i,fnames[len(fnames)-1][j])
