@@ -200,7 +200,7 @@ def calc_MOI(pos, atoms, mass):
 
 @njit(parallel=True)
 def calc_GyrT(pos, atoms):
-    """ Calculates moment of intertia tensor for a specific time.
+    """ Calculates gyration tensor for a specific time.
  
     Parameters
     ----------
@@ -249,15 +249,14 @@ def NP_shape(cluster, inGRO='New.gro', ndx_pickle='molndx.pickle', prefix=''):
     
     The descriptors are summarized in: 
     https://en.wikipedia.org/wiki/Gyration_tensor
+    published article DOI:https://doi.org/10.1021/ma00148a028
 
     Parameters
     ----------
     cluster: 2D list
          Contains DNA and PEI IDs of one cluster.
     inGRO: str, optional
-        Starting file name of input Gromacs files. Files [infile][t].gro are
-        read. The nanoparticles must be whole (across boundary). 
-        (default value is 'New')
+        File name of input Gromacs file. (default value is 'New.gro')
     ndx_pickle: str, optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
         more details. (default value is 'molndx.pickle')
@@ -295,6 +294,7 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
     
     The descriptors are summarized in: 
     https://en.wikipedia.org/wiki/Gyration_tensor
+    published article DOI:https://doi.org/10.1021/ma00148a028
 
     Parameters
     ----------

@@ -351,9 +351,33 @@ def get_roles2(avg_step, connected_pickle='connected.pickle', mol = 0, \
             tavg=(sim_time[t+1]+sim_time[t+1-avg_step])*0.5
             w.write(str(round(tavg,4)) + sep + \
                 str(round(avg_bri,4)) + sep + str(round(m2m,4)) + '\n')
-    w.close()   
+    w.close()  
+ 
 def get_role_conversion(connected_pickle='connected.pickle', mol=1, \
     outname='role_conv.dat',sep=' '):
+    """ Calculates total number of conversions between each rol (unbound,
+        peripheral, and bridging) in consecutive timesteps.
+
+    Parameters
+    ----------
+    connected_pickle: str, optional
+        Filename which contains pickled connection matrix data. For details see
+        connMat.gro2connected(). (default value is 'connected.pickle')
+    mol: int, optional
+        Decides the molecule for which roles are calculated. 0 is for DNA, and
+        1 is for PEI. (default value is 1)
+    outname: str, optional
+        Output file name. (default value is 'role_conv.dat')
+    sep: str, optional
+        A string that separates data elements. (default value is ' ')
+    Writes
+    ------
+    [outname]: txt file format
+        First line is a comment. Second line contains role conversions, unbound
+        to peripheral, peripheral to bridging, and unbound to bridging. Third
+        line is a commend. Fourth line contains role conversions, peripheral to
+        unbound, bridging to peripheral, and bridging to unbound.
+    """
     connected=nx.read_gpickle(connected_pickle)
     consts=connected.shape
     role_conv=np.zeros((3,3),dtype=int)
