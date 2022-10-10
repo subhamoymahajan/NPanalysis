@@ -1,6 +1,6 @@
 # This Program is used to analyze properties of two-component nanoparticle. It 
 # is primarily designed to assist Gromacs analysis 
-#    Copyright (C) 2021 Subhamoy Mahajan <subhamoygithub@gmail.com>
+#    Copyright (C) 2021 Subhamoy Mahajan 
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -182,6 +182,6 @@ def cat_pickles(data_fname,sep):
         for i in range(len(remove_idx)):
             if type(data_i)==np.ndarray:
                 data_i=np.delete(data_i,(remove_idx[i]),axis=0)
-            if type(data_i)==list:
+            elif type(data_i)==list:
                 data_i.pop(remove_idx[i])
         nx.write_gpickle(data_i,fnames[len(fnames)-1][j])

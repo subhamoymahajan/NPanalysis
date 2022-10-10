@@ -1,6 +1,6 @@
 # This Program is used to analyze properties of two-component nanoparticle. It 
 # is primarily designed to assist Gromacs analysis 
-#    Copyright (C) 2021 Subhamoy Mahajan <subhamoygithub@gmail.com>
+#    Copyright (C) 2021 Subhamoy Mahajan
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
