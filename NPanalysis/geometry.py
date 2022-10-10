@@ -1,6 +1,6 @@
 # This Program is used to analyze properties of two-component nanoparticle. It 
 # is primarily designed to assist Gromacs analysis 
-#    Copyright (C) 2021 Subhamoy Mahajan <subhamoygithub@gmail.com>
+#    Copyright (C) 2021 Subhamoy Mahajan
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -63,6 +63,27 @@ def distance2(pos_i,pos_j):
         Square of distance between two atoms
     """
     return np.sum(np.square(pos_i-pos_j)) 
+
+@njit(parallel=True)
+def dist_matrix(pos,maxd=None):
+    """Calculates distance matrix for positions
+    """
+    N=len(pos)
+    dist_mat=np.zeros((N,N))
+    if maxd!=None:
+        maxd2=maxd*maxd
+    for i in prange(N-1):
+        for j in prange(i+1,N):
+            foo=np.sum(np.square(pos[i]-pos[j]))
+            if maxd==None:
+                dist_mat[i,j]=np.sqrt(foo)
+            elif foo>maxd2:
+                dist_mat[i,j]=maxd
+            else:
+                dist_mat[i,j]=np.sqrt(foo)
+    return dist_mat       
+            
+   
 
 @njit(parallel=True)
 def get_cen(pos, atoms):
