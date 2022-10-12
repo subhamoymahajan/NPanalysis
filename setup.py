@@ -2,13 +2,12 @@ import setuptools
 
 setuptools.setup(
    name="NPanalysis",
-   version="1.2.0",
+   version="1.3.dev1",
    author="Subhamoy Mahajan",
-   author_email="subhamoygithub@gmail.com",
    description="Analysis module for two-component nanoparticles",
    url="https://github.com/subhamoymahajan/NPanalysis",
    license='GPLv3',
-   install_requires=['numpy','networkx','matplotlib','numba'],
+   install_requires=['numpy==1.19.2','networkx==2.5','matplotlib==3.3.2','numba==0.49.1'],
    packages=['NPanalysis'],
    package_data={'': ['LICENSE.txt']},
    classifiers=[
@@ -21,7 +20,6 @@ setuptools.setup(
         "Programming Language:: Unix Shell",
         "Topic :: Scientific/Engineering :: Chemistry",
         "Topic :: Scientific/Engineering :: Physics",
-        "Topic :: Scientific/Engineering :: Chemistry",
    ],
    python_requires='>=3.7'
 )
