@@ -269,7 +269,7 @@ def get_roles(avg_step, connected_pickle='connected.pickle', mol = 1, \
     for t in range(int(times/avg_step)):
         t1=t*avg_step
         t2=(t+1)*avg_step
-        tavg=(sim_time[t1]+sim_time[t2])*0.5
+        tavg=np.average(sim_time[t1:min(t2,times-1)])
         w.write( str(round(tavg,4)) + sep + \
            str(round(np.average(free[t1:t2+1]),4)) + sep + \
            str(round(np.average(peri[t1:t2+1]),4)) + sep + \
@@ -345,10 +345,10 @@ def get_roles2(avg_step, connected_pickle='connected.pickle', mol = 0, \
                 if bri>0:
                     avg_bri+=bri
                     m2m+=1
-        if t%avg_step==avg_step-1:
+        if t%avg_step==avg_step-1 or t==const[0]-1:
             avg_bri/=float(m2m+small) #Average over molecule pairs
             m2m/=float(avg_step) #Average over time
-            tavg=(sim_time[t+1]+sim_time[t+1-avg_step])*0.5
+            tavg=np.average(sim_time[int(t/avg_step)*avg_step:t+1])
             w.write(str(round(tavg,4)) + sep + \
                 str(round(avg_bri,4)) + sep + str(round(m2m,4)) + '\n')
     w.close()  

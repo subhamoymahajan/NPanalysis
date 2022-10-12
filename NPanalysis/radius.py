@@ -474,13 +474,13 @@ def gen_rad_avg(rad_pickle,avg_len,outname,sep=' ',time_pickle='time.pickle', \
         if t==0:
             R=[]
         R=R+rad[t] 
-        if t%avg_len==avg_len-1:
+        if t%avg_len==avg_len-1 or t==times-1:
             avg=np.average(R)
             std=np.std(R)
             if sqrt:
                 avg=np.sqrt(avg)
                 std=np.sqrt(avg)
-            tavg=(sim_time[t+1]+sim_time[t+1-avg_len])*0.5
+            tavg=np.average(sim_time[int(t/avg_len)*avg_len:t+1])
             w.write(str(round(tavg,4))+sep+str(round(avg,4))+sep+ \
                 str(round(std,4))+'\n')
 
