@@ -155,6 +155,8 @@ def get_pbc_mindist(dna_pos,pei_pos,box,ndna,npei,adna,apei, pbc):
     for k in range(3):
         if pbc[k]==1:#Apply PBC 
             dr2[:,:,k]=np.mod(dr[:,:,k]+0.5*box[k],box[k])-0.5*box[k] 
+        else:
+            dr2[:,:,k]=dr[:,:,k]
     # Displacement of DNA atoms needed to minimize distance with PEI atoms
     disp=dr2-dr 
     d2=np.sum(np.square(dr2),axis=2) #square distance with PBC 
@@ -216,6 +218,8 @@ def get_pbcdisp_mols(pos, box, atoms1, atoms2, pbc): #@
     for k in range(3):
         if pbc[k]==1:#Apply PBC 
             dr2[:,:,k]=np.mod(dr[:,:,k]+0.5*box[k],box[k])-0.5*box[k] 
+        else:
+            dr2[:,:,k]=dr[:,:,k]
     disp=dr2-dr
     d2=np.sum(np.square(disp),axis=2)
     N=np.argmin(d2)
