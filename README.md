@@ -11,12 +11,15 @@ NP(nanoparticle)analysis is a tool to analyze nanoparticle properties in all-ato
 7. Make nanoparticles whole across periodic boundaries
 7. Radius of gyration, and hydrodynamic radius of nanoparticle as a function of time
 8. Radius of gyration, and hydrodynamic radius of nanoparticle as a function of size
+9. Calculate transition diagram and principal transition diagram of dynamic processes and plot them.
 
 ## Published work
 
 This toolbox is based on published work:
 
 [1] Mahajan S., and Tang T., Polyethylenimine–DNA Ratio Strongly Affects Their Nanoparticle Formation: A Large-Scale Coarse-Grained Molecular Dynamics Study, *J. Phys. Chem. B*, **2019**, 123, 45, 9629-9640, DOI: [10.1021/acs.jpcb.9b07031](https://pubs.acs.org/doi/abs/10.1021/acs.jpcb.9b07031)
+
+[2] Mahajan S., and Tang T., Polyethylenimine–DNA Nanoparticles under Endosomal Acidification and Implication to Gene Delivery, *Langmuir* **2022**, 38(27), 8382-8397, DOI: [10.1021/acs.langmuir.2c00952](https://doi.org/10.1021/acs.langmuir.2c00952)
 
 ## Installation
 
@@ -139,11 +142,67 @@ Calculate average radii per number average size: the average is calculated over 
 NPa.radius.gen_rad_per_size('Rh.pickle','Rh_size.dat',200,251)
 NPa.radius.gen_rad_per_size('Rg2.pickle','Rg_size.dat',200,251,sqrt=True)
 ``` 
+
+### Calculate principal transition diagram
+
+Calculate principal transition diagram from connection matrix. In the code, "GPT" stands for "graph of principal transitions", which is identical to principal transition diagram.
+
+```python
+NPa.cluster.gen_GPT(main_mol=0, GPT_out_pickle='GPT.pickle', UniqNSGs_out_pickle = 'UniqNSGs.pickle',
+    connected_pickle='connected.pickle', time_pickle = 'time.pickle')
+```
+
+Plot the principal transition diagram using the unique nanoparticle IDs. 
+
+```python
+NPa.cluster.plot_GPT(GPT_pickle='GPT.pickle', show=True, edge_label=True, time_pickle='time.pickle')
+```
+
+Calculated nanoparticle structure graph from each unique ID, where number of bridges between each pair of main molecule (for example DNA) is evaluated. Below, NSG stands for "nanoparticle structure graph" and "weighed" or "w" indicates that number of bridges between main molecule is evaluated.
+
+```python
+NPa.cluster.get_weighted_NSGs(main_mol=0, wNSG_pickle='wNSG.pickle', GPT_pickle='GPT.pickle', 
+    UniqNSGs_pickle='UniqNSGs.pickle', time_pickle='time.pickle', connected_pickle='connected.pickle')
+```
+
+To generate publication quality images for NSG, you can use an interactive plot (See Tutorial 3). UID refers to the unique ID. Use the script below to determine the representation for all starting UIDs (or ending UIDs in case of dissociation).
+```python
+NPa.cluster.plot_GPT_NSG(UID, GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle', time_pickle='time.pickle', 
+    NSG_pos_pickle='NSG_pos.pickle', labels=True, ref_UIDs=None)
+```
+
+After the representation of all reference UIDs have been determined (using the command above), PNG of all NSG can be determined using the following command,
+
+```python
+NPa.cluster.plot_GPT_NSG_all(GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle', time_pickle='time.pickle', 
+    NSG_pos_pickle='NSG_pos.pickle', labels=False, arrow=True, rnd_off=4, figname='GPT-NSG', dpi=200, ref_UIDs= UID_list)
+```
+### Calculate transition diagram
+
+The script is written such that one has to calculate the principal transition diagram before calculating the transition diagram. The advantage is purely asthetic. We can plot the transition diagram and highlight the principal transitions in the plot. See Tutorial 4 and ref \[2\] for details.
+
+To calculate the transition diagram referred to as GT (graph of transitions), use the following python command,
+
+```python
+NPa.cluster.gen_GT(main_mol=0, GT_out_pickle='GT.pickle', UniqNSGs_out_pickle = 'UniqNSGs.pickle', 
+    connected_pickle='connected.pickle', time_pickle = 'time.pickle')
+```
+
+To plot the GT use the following python command,
+
+```python
+NPa.cluster.plot_GT(GT_pickle='GT.pickle', GPT_pickle='GPT.pickle', time1=0, time2=0.15, 
+    node_pos_pickle='GT_nodepos.pickle', iters=2000, show=True,  show_gt_edge=True)
+```
+
+`iters = 0 ` plots the GT using `neato` networkx node positions. For a value greater than zero, updates the position of nodes in a molecular dynamics fashion.
+
+
 # Contributors
 1. Subhamoy Mahajan, PhD student, Mechanical Engineering, University of Alberta, Edmonton, Canada (will graduate by Sep, 2021)
 2. Tian Tang, Professor, Mechanical Engineering, University of Alberta, Edmonton, Canada 
 
 # Funding Sources
-This research was funded by Natural Science and Engineering Research Council of Canada through Tian Tang. My research was also funded by several scholarships, Mitacs Globalink Graduate Fellowship (2016-2019), RR Gilpin Memorial Scholarship (2019), Alberta Graduate Excellence Scholarship (2020), Sadler Graduate Scholarship (2020).
+v1.1 and v1.2: This research was funded by Natural Science and Engineering Research Council of Canada through Tian Tang. My research was also funded by several scholarships, Mitacs Globalink Graduate Fellowship (2016-2019), RR Gilpin Memorial Scholarship (2019), Alberta Graduate Excellence Scholarship (2020), Sadler Graduate Scholarship (2020).
 
 

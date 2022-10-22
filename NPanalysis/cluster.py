@@ -26,10 +26,11 @@
 
 import networkx as nx
 import numpy as np
-from numba import njit
+from numba import njit, prange
 import copy
 import os
 import math
+from . import geometry
 
 small=1E-6
 
@@ -2262,8 +2263,7 @@ def update_GT(GT,NSGs_old,NSGs_new,UniqNSGs,time,dt=1.0):
 
 def gen_GT(GT_in_pickle=None, UniqNSGs_in_pickle = None, main_mol=0, \
     GT_out_pickle='GT.pickle', UniqNSGs_out_pickle = 'UniqNSGs.pickle', \
-    connected_pickle='connected.pickle', time_pickle = 'time.pickle',
-    dt=1.0):
+    connected_pickle='connected.pickle', time_pickle = 'time.pickle'):
     """ Generate Graph of transitions from connection matrix
 
     Parameters
@@ -2283,7 +2283,7 @@ def gen_GT(GT_in_pickle=None, UniqNSGs_in_pickle = None, main_mol=0, \
     time_pickle: str, Optional
         See connMat.gro2connected(). (Default 'time.pickle')
     dt: float, Optional
-        See update_GPT(). (Default 1.0)
+        See update_GPT(). (Default None)
 
     Writes
     ------
@@ -2295,6 +2295,7 @@ def gen_GT(GT_in_pickle=None, UniqNSGs_in_pickle = None, main_mol=0, \
     UniqNSGs=[]
     connected=nx.read_gpickle(connected_pickle)
     sim_time=nx.read_gpickle(time_pickle)
+    dt=sim_time[1]-sim_time[0]
     const=connected.shape
     if GT_in_pickle!=None:
         GT=nx.read_gpickle(GT_in_pickle)
