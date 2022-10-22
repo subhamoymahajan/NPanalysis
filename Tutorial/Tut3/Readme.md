@@ -19,6 +19,10 @@ A simple representation of GPT is,
 
 1->8->(-)->30,31
 
+`->` represents principal transitions and `(-)` represents dissociation of nanoparticle. The numbers are unique IDs of a nanoparticle. 
+
+For aggregation and restructuring, respectively `(+)` and `(x)` would be used 
+
 ### Calculating & Plotting Individual NP structure Graph (NSG).
 ```bash
 python run2.py
