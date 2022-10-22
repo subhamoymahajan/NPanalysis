@@ -1,4 +1,4 @@
-## Tutorial 3: Principal Transition Diagram
+## Tutorial 3: Generating Principal Transition Diagram
 
 files: connected.pickle, time.pickle have been calculated from first 150 ns of 
  acidification simulation of α = 10 and instant acidificaiton (Figure 8a in [1])
