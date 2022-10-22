@@ -16,9 +16,9 @@ print("Step 2: Calculating Connection Matrix\n")
 NPa.connMat.gro2connected(inGRO='Whole/DP', time_pickle='time.pickle',  
     connected_pickle='connected.pickle', time_fac=4*1E-6, time_shift=0, 
     mindist_pickle='mindist.pickle', ndx_pickle='molndx.pickle')
-NPa.connMat.get_roles(50, connected_pickle='connected.pickle', mol=1, 
+NPa.connMat.get_roles(50, connected_pickle='connected.pickle', main_mol=1, 
     time_pickle='time.pickle', outname='PEI_roles.dat',sep=',')
-NPa.connMat.get_roles2(50, connected_pickle='connected.pickle', mol=1, 
+NPa.connMat.get_roles2(50, connected_pickle='connected.pickle', main_mol=1, 
     time_pickle='time.pickle', outname='PEI_roles2.dat',sep=',')
 
 ##3.Calculate clusters
