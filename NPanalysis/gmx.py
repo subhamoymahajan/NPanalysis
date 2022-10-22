@@ -572,6 +572,6 @@ def read_ndx(filename,ndx_pickle='molndx.pickle',prefix=''):
             foo=lines.split()
             foo=[int(x)-1 for x in foo]
             ndx[name]+=foo
-
+    f.close()
     print("Writing: "+out_pickle)
     nx.write_gpickle(ndx,out_pickle)
