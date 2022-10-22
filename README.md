@@ -174,9 +174,9 @@ NPa.cluster.plot_GPT_NSG(UID, GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle'
 After the representation of all reference UIDs have been determined (using the command above), PNG of all NSG can be determined using the following command,
 
 ```python
-NPa.cluster.plot_GPT_NSG_all(GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle', time_pickle='time.pickle', 
-    NSG_pos_pickle='NSG_pos.pickle', labels=False, arrow=True, rnd_off=4, figname='GPT-NSG', dpi=200, 
-    ref_UIDs= UID_list)
+NPa.cluster.plot_GPT_NSG_all(GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle', 
+    time_pickle='time.pickle', NSG_pos_pickle='NSG_pos.pickle', labels=False, arrow=True, rnd_off=4, 
+    figname='GPT-NSG', dpi=200, ref_UIDs= UID_list)
 ```
 ### Calculate transition diagram
 
