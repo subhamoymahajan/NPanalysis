@@ -167,15 +167,16 @@ NPa.cluster.get_weighted_NSGs(main_mol=0, wNSG_pickle='wNSG.pickle', GPT_pickle=
 
 To generate publication quality images for NSG, you can use an interactive plot (See Tutorial 3). UID refers to the unique ID. Use the script below to determine the representation for all starting UIDs (or ending UIDs in case of dissociation).
 ```python
-NPa.cluster.plot_GPT_NSG(UID, GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle', time_pickle='time.pickle', 
-    NSG_pos_pickle='NSG_pos.pickle', labels=True, ref_UIDs=None)
+NPa.cluster.plot_GPT_NSG(UID, GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle', 
+    time_pickle='time.pickle', NSG_pos_pickle='NSG_pos.pickle', labels=True, ref_UIDs=None)
 ```
 
 After the representation of all reference UIDs have been determined (using the command above), PNG of all NSG can be determined using the following command,
 
 ```python
 NPa.cluster.plot_GPT_NSG_all(GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle', time_pickle='time.pickle', 
-    NSG_pos_pickle='NSG_pos.pickle', labels=False, arrow=True, rnd_off=4, figname='GPT-NSG', dpi=200, ref_UIDs= UID_list)
+    NSG_pos_pickle='NSG_pos.pickle', labels=False, arrow=True, rnd_off=4, figname='GPT-NSG', dpi=200, 
+    ref_UIDs= UID_list)
 ```
 ### Calculate transition diagram
 
