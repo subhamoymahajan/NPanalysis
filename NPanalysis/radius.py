@@ -72,6 +72,7 @@ def calc_Rg2_t(pos,clust_atoms,mass):
         is the cluster ID.
     mass: List of floats
         Contains mass information of all atoms.
+
     Returns
     -------
     Rg2s: float
@@ -127,7 +128,8 @@ def calc_Rg2(pos,atoms,mass):
     atoms: List of integers
         Contains global ID of atoms in the nanoparticle
     mass: List of floats
-        Contains mass information of all atoms.
+        See calc_Rg2_t()
+
     Returns
     -------
     Rg: float
@@ -160,7 +162,9 @@ def calc_MOI(pos, atoms, mass):
         ID, and axis 1 is the direction.
     atoms: List of integers
         Contains global ID of atoms in the nanoparticle
-    mass: numpy array 
+    mass: numpy array
+        See calc_Rg2_t() 
+
     Returns
     -------
     MOI: 3x3 numpy ndarray of floats
@@ -243,6 +247,38 @@ def calc_GyrT(pos, atoms):
         GyrT[(i+1)%3,i]=I2[i] #Iyz, Izy or Ixz
     return GyrT
 
+def NP_shape2(pos_atoms):
+    """ Calculates NP shape descriptors asphericitym, acylindricity, and 
+        relative shape anisotropy for a NP.
+    
+    The descriptors are summarized in: 
+    https://en.wikipedia.org/wiki/Gyration_tensor
+    published article DOI:https://doi.org/10.1021/ma00148a028
+
+    Parameters
+    ----------
+    pos_atoms: numpyy array of floats
+        Array of particle positions.
+
+    Returns
+    -------
+    b: float
+        Asphericity
+    c: float
+        Acylindricity
+    k2: float
+        Relative shape anisotropy
+    """
+    GyrT=calc_GyrT(pos_atoms, np.arange(len(pos_atoms)))
+    eig,eigv=np.linalg.eig(GyrT)
+    eig=sorted(eig)
+    #Quick reference: https://en.wikipedia.org/wiki/Gyration_tensor
+    #Please look into detailed references and cite them (not the wiki)
+    b=eig[2]-0.5*(eig[0]+eig[1]) #asphericity
+    c=eig[1]-eig[0] #acylindricity 
+    k2=1.5*np.sum(np.square(eig))/(sum(eig)**2) -0.5 #relative shape anisotropy
+    return b, c, k2
+
 def NP_shape(cluster, inGRO='New.gro', ndx_pickle='molndx.pickle', prefix=''):
     """ Calculates NP shape descriptors asphericitym, acylindricity, and 
         relative shape anisotropy for a NP.
@@ -255,36 +291,29 @@ def NP_shape(cluster, inGRO='New.gro', ndx_pickle='molndx.pickle', prefix=''):
     ----------
     cluster: 2D list
          Contains DNA and PEI IDs of one cluster.
-    inGRO: str, optional
-        File name of input Gromacs file. (default value is 'New.gro')
-    ndx_pickle: str, optional
+    inGRO: str, Optional
+        File name of input Gromacs file. (Default 'New.gro')
+    ndx_pickle: str, Optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
-        more details. (default value is 'molndx.pickle')
+        more details. (Default 'molndx.pickle')
     prefix: str
-        Prefix for DNA and PEI name. (default value is '')
+        Prefix for DNA and PEI name. (Default '')
+
+    Returns
+    -------
+    See NP_shape2()
     """
     constants=nx.read_gpickle('constants.pickle')
     pname=prefix+constants['pei_name']
     dname=prefix+constants['dna_name']
     ndx=nx.read_gpickle(ndx_pickle)
     pos,box,text=gmx.read_gro(inGRO)
-    atoms=[]
-    for d in cluster[0]:
-        atoms+=ndx[dname+str(d)]
-    for p in cluster[1]:
-        atoms+=ndx[pname+str(p)]
-    atoms=np.array(atoms)
-    GyrT=calc_GyrT(pos, atoms)
-    eig,eigv=np.linalg.eig(GyrT)
-    eig=sorted(eig)
-    #Quick reference: https://en.wikipedia.org/wiki/Gyration_tensor
-    #Please look into detailed references and cite them (not the wiki)
-    b=eig[2]-0.5*(eig[0]+eig[1]) #asphericity
-    c=eig[1]-eig[0] #acylindricity 
-    k2=1.5*np.sum(np.square(eig))/(sum(eig)**2) -0.5 #relative shape anisotropy
+    catoms=gmx.get_NPatomIDs(cluster,ndx,dna_name,pei_name,main_mol)
+    b,c,k2=NP_shape2(pos[atoms])
     print('asphericity: '+str(round(b,4)))
     print('acylindricity: '+str(round(c,4)))
     print('relative shape anisotropy: '+str(round(k2,4)))
+    return b, c, k2
 
 def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
     cluster_pickle='cluster.pickle', main_mol=0, ndx_pickle='molndx.pickle', \
@@ -298,26 +327,26 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
 
     Parameters
     ----------
-    shape_pickle: str, optional
+    shape_pickle: str, Optional
         Filename in which shape discriptors will be saved as pickled file. 
-        (default value is 'shape.pickle')
-    inGRO: str, optional
+        (Default 'shape.pickle')
+    inGRO: str, Optional
         Starting file name of input Gromacs files. Files [infile][t].gro are
         read. The nanoparticles must be whole (across boundary). 
-        (default value is 'New')
-    sep: str, optional
-        A string that separates data. (default value is ' ')
-    cluster_pickle: str, optional
+        (Default 'New')
+    sep: str, Optional
+        A string that separates data. (Default ' ')
+    cluster_pickle: str, Optional
         Filename which contains pickled cluster data. See cluster.gen_cluster()
-        for more details. (default value is 'cluster.pickle')
-    main_mol: int, optional
+        for more details. (Default 'cluster.pickle')
+    main_mol: int, Optional
         Chooses a main molecule to calculate size of nanoparticle. 0 represents
-        DNA and 1 represents PEI. (default value is 0).
-    ndx_pickle: str, optional
+        DNA and 1 represents PEI. (Default 0).
+    ndx_pickle: str, Optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
-        more details. (default value is 'molndx.pickle')
+        more details. (Default 'molndx.pickle')
     prefix: str
-        Prefix for DNA and PEI name. (default value is '')
+        Prefix for DNA and PEI name. (Default '')
         
     Writes
     ------
@@ -336,16 +365,9 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
     for t in range(times):
         pos,box,text=gmx.read_gro(inGRO+str(t)+'.gro')
         catoms=gmx.get_NPatomIDs(cluster[t],ndx,dna_name,pei_name,main_mol)
-        for c in len(catoms):
-            shape_c=[]
-            GyrT=calc_GyrT(pos, catoms[c])
-            eig,eigv=np.linalg.eig(GyrT)
-            eig=sorted(eig)
-            #Quick reference: https://en.wikipedia.org/wiki/Gyration_tensor
-            #Please look into detailed references and cite them (not the wiki)
-            b=eig[2]-0.5*(eig[0]+eig[1]) #asphericity
-            c=eig[1]-eig[0] #acylindricity 
-            k2=1.5*np.sum(np.square(eig))/(sum(eig)**2) -0.5 #relative shape anisotropy
+        shape_c=[]
+        for x in len(catoms):
+            b,c,k2=NP_shape2(pos[catoms[x]])
             shape_c.append([b, c, k2])
         shape.appen(shape_c)
     print('Writing: '+shape_pickle)
@@ -359,30 +381,30 @@ def calc_Rh_Rg(Rh_pickle='Rh.pickle', Rg2_pickle='Rg.pickle', inGRO='New',\
 
     Parameters
     ----------
-    Rh_pickle: str, optional
-        Filename to pickle hydrodynamic radius data. 
-    Rg2_pickle: str, optional
-        Filename to pickle square of radius of gyraiton data.
-    inGRO: str, optional
+    Rh_pickle: str, Optional
+        Filename to pickle hydrodynamic radius data. (Default 'Rh.pickle')
+    Rg2_pickle: str, Optional
+        Filename to pickle square of radius of gyraiton data. 
+        (Default 'Rg.pickle')
+    inGRO: str, Optional
         Starting file name of input Gromacs files. Files [infile][t].gro are
-        read. The nanoparticles must be whole (across boundary). 
-        (default value is 'New')
-    mass_pickle: str, optional
+        read. The nanoparticles must be whole across boundary. (Default 'New')
+    mass_pickle: str, Optional
         Filename containing pickled mass data. Contains a list of atom mass,
-         ordered according to the global ID of atoms. 
-    cluster_pickle: str, optional
+         ordered according to the global ID of atoms. (Default 'mass.pickle')
+    cluster_pickle: str, Optional
         Filename which contains pickled cluster data. See cluster.gen_cluster()
-        for more details. (default value is 'cluster.pickle')
-    main_mol: int, optional
+        for more details. (Default 'cluster.pickle')
+    main_mol: int, Optional
         Chooses a main molecule to calculate size of nanoparticle. 0 represents
-        DNA and 1 represents PEI. (default value is 0).
-    ndx_pickle: str, optional
+        DNA and 1 represents PEI. (Default 0).
+    ndx_pickle: str, Optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
-        more details. (default value is 'molndx.pickle')
-    sep: str, optional
-        A string that separates data. for CSV files use sep=','.
+        more details. (Default 'molndx.pickle')
+    sep: str, Optional
+        A string that separates data. (Default ' ')
     prefix: str
-        Prefix for DNA and PEI name. (default value is '')
+        Prefix for DNA and PEI name. (Default '')
 
     Writes
     ------
@@ -447,16 +469,16 @@ def gen_rad_avg(rad_pickle,avg_len,outname,sep=' ',time_pickle='time.pickle', \
         Number of timesteps over which the average is evaluated
     outname: str 
         Output filename
-    sep: str, optional
-        A string that separates data. (default value is ' ')
-    time_pickle: str, optional
+    sep: str, Optional
+        A string that separates data. (Default ' ')
+    time_pickle: str, Optional
         Filename which contains the pickled simulation time data. Contains a
         numpy array of simulation time, which is adjusted by multiplying a 
-        factor and shifting by a constant. (default value is 'time.pickle')
-    sqrt: bool, optional
+        factor and shifting by a constant. (Default 'time.pickle')
+    sqrt: bool, Optional
         Specifies if a square root should be performed over the average and 
         standard error. Use True for taking a square root for square of radius
-        of gyraiton values. (Default value is False)
+        of gyraiton values. (Default False)
 
     Writes
     ------
@@ -483,6 +505,7 @@ def gen_rad_avg(rad_pickle,avg_len,outname,sep=' ',time_pickle='time.pickle', \
             tavg=np.average(sim_time[int(t/avg_len)*avg_len:t+1])
             w.write(str(round(tavg,4))+sep+str(round(avg,4))+sep+ \
                 str(round(std,4))+'\n')
+    w.close()
 
 def gen_rad_per_size(rad_pickle, outname, t1, t2, sep=' ', main_mol=0, \
     cluster_pickle='cluster.pickle',sqrt=False):
@@ -500,18 +523,18 @@ def gen_rad_per_size(rad_pickle, outname, t1, t2, sep=' ', main_mol=0, \
          time step to start averaing (included).
     t2: int
          time step to end averaging (non included).
-    sep: str, optional
-        A string that separates data. (default value is ' ')
-    main_mol: int, optional
+    sep: str, Optional
+        A string that separates data. (Default ' ')
+    main_mol: int, Optional
         Chooses a main molecule to calculate size of nanoparticle. 0 represents
-        DNA and 1 represents PEI. (default value is 0).
-    cluster_pickle: str, optional
+        DNA and 1 represents PEI. (Default 0).
+    cluster_pickle: str, Optional
         Filename which contains pickled cluster data. See cluster.gen_cluster()
-        for more details. (default value is 'cluster.pickle')
-    sqrt: bool, optional
+        for more details. (Default 'cluster.pickle')
+    sqrt: bool, Optional
         Specifies if a square root should be performed over the average and 
         standard error. Use True for taking a square root for square of radius
-        of gyraiton values. (Default value is False)
+        of gyraiton values. (Default False)
    
     Writes
     ------
@@ -567,3 +590,4 @@ def gen_rad_per_size(rad_pickle, outname, t1, t2, sep=' ', main_mol=0, \
                 avg=np.sqrt(avg)
                 std=np.sqrt(std)
         w.write(str(i+1)+sep+str(round(avg,4))+sep+str(round(std,4))+'\n')
+    w.close()

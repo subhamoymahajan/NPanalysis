@@ -34,25 +34,17 @@ def pickle_mindist(fileheader='mindist', mindist_pickle='mindist.pickle', \
     
     Parameters
     ----------
-    fileheader: str, optional
+    fileheader: str, Optional
         Filenames [fileheader][i]-[j].xvg will be read, which contains the 
         minimum distance between DNA [i] and PEI [j].
-    mindist_pickle: str, optional
-        Filename to save the pickled minimum distance data. 
-        (default value is 'mindist.pickle')
-    time_pickle: str, optional
-        Filename to save the pickled simulation time. 
-        (default value is 'time.pickle')
-    time_fac: float, optional
-        Multiply the simulation time by a factor. (default valus is 1)
-    time_shift: float, optional
-        Shift the simulation time by a constant. (default value is 0)
+
+    For other paramters, see connMat.gro2connected()
+
     Writes
     ------
     [mindist_pickle]: pickled data of a 3D numpy array of floats.
-        For details see connMat.gro2connected()
     [time_pickle]: pickled data of a numpy array of floats.
-        For details see connMat.gro2connected()
+    For details see connMat.gro2connected()
     """
     constants=nx.read_gpickle('constants.pickle')
     ndna=constants['ndna']
@@ -98,17 +90,16 @@ def pickle_mass(filename='tprdump',mass_pickle='mass.pickle'):
 
     Parameters
     ----------
-    filename: str, optional
+    filename: str, Optional
         Filename containing the output of 'gmx dump -s file.tpr'. 
-        (default is 'trpdump')
-    mass_pickle: str, optional
-        Filename of the output pickle file. (default is 'mass.pickle')
+        (Default 'trpdump')
+    mass_pickle: str, Optional
+        Filename of the output pickle file. (Default 'mass.pickle')
       
     Writes
     ------
     [mass_pickle]: pickled file of list.
-        Contains a list of atom mass, ordered according to the global ID of 
-        atoms. 
+        Contains a list of atom mass, ordered based on the global ID of atoms. 
     """
     print("Writing: "+str(mass_pickle))
     mass=[]
@@ -210,8 +201,7 @@ def write_gro(filename,pos,texts):
     filename: str
         Output file name. Must end with .gro
     pos: 2D numpy array of floats
-        Position of atoms. Axis 0 is the global atom ID, and axis 1 is the
-        direction.
+        See pos_i or pos_j in geometry.distance()
     texts: numpy array of strings   
         Contains all text information of a .gro file, except the position 
         coordinates.     
@@ -241,11 +231,8 @@ def get_NPatomIDs(clusters, ndx, dna_name, pei_name, main_mol=0, NP_ID=None):
     
     Parameters
     ----------
-    cluster: 2D array of integers
-       Contains all atom IDs in each cluster. Axis 0 is the cluster ID. Each
-       cluster ID returns a list of DNA and PEI molecule IDs. If molecule ID
-       of DNA is -1 imples the PEIs are free PEIs. Similarly if molecule ID of 
-       PEI is -1 implies the DNAs are free DNAs.       
+    clusters: 2D array of integers
+       See clusters in cluster.gen_clusters()
     ndx: dictionary
        Dictionary containing atom IDs for each molecule. The key is the molecule
        name with ID ("[Molecule Name][ID]"). The value is a list of global ID of 
@@ -254,15 +241,16 @@ def get_NPatomIDs(clusters, ndx, dna_name, pei_name, main_mol=0, NP_ID=None):
        name of DNA molecules in the ndx file
     pei_name: str
        name of PEI molecules in the ndx file
-    main_mol: int, optional
-        Chooses a main molecule to calculate size of nanoparticle. 0 represents
-        DNA and 1 represents PEI. (default value is 0).
-    NP_ID: int, optional
+    main_mol: int, Optional
+       See cluster.gen_avgsize(). (Default 0)
+    NP_ID: int, Optional
         Index of a specific NP for which the atom IDs are desired. Default value 
-        is None. At default setting atom ID for all NPs will be returned
+        is None. At default setting atom ID for all NPs will be returned.
+        (Default None)
+
     Returns
     -------
-    atoms: array of integers
+    atoms: numpy array of integers
        List of global IDs of atom 
     """
     atoms=[]
@@ -297,22 +285,18 @@ def make_NPwhole(inGRO='DP',outGRO='New', cluster_pickle='cluster.pickle', \
   
     Parameters
     ----------
-    inGRO: str, optional
-        The starting strings of input Gromacs structure files. For details see
-        connMat.gro2connected(). (default value is 'DP')
-    outGRO: str, optional
-        Output Gromacs structure files. (defaut valus is 'New')  
-    cluster_pickle: str, optional
-        Filename which contains pickled cluster data. See cluster.gen_cluster()
-        for more details. (default value is 'cluster.pickle')
-    connected_pickle: str, optional
-        Filename which contains pickled connection matrix data. For detrails see
-        connMat.gro2connected(). (default value is 'connected.pickle')
-    ndx_pickle: str, optional
-        Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for
-        more details. (default value is 'molndx.pickle') 
+    inGRO: str, Optional
+        See connMat.gro2connected(). Only header name. (Default 'DP')
+    outGRO: str, Optional
+        Output Gromacs structure files. Similar to inGRO. (Default 'New')  
+    cluster_pickle: str, Optional
+        See cluster.gen_cluster(). (Default 'cluster.pickle')
+    connected_pickle: str, Optional
+        See connMat.gro2connected(). (Default 'connected.pickle')
+    ndx_pickle: str, Optional
+        See gen_index_mol(). (Default 'molndx.pickle')
     prefix: str
-        Prefix for DNA and PEI name. (default value is '')
+        See connMat.gro2connected(). (Default '')
 
     Writes
     ------
@@ -378,7 +362,7 @@ def make_NPwhole(inGRO='DP',outGRO='New', cluster_pickle='cluster.pickle', \
                         continue
                     atoms2=np.array(ndx[nam]) #get atoms in the bound molecule
                     # find the disp required for atom2 to reduce minimum 
-                    # distance between atoms2 and atoms12
+                    # distance between atoms2 and atoms1
                     disp=geometry.get_pbcdisp_mols(pos,box,atoms1,atoms2,pbc)
                     pos=geometry.change_pos(pos,disp,atoms2)  
                 # add the name of current molecule in finished since all bound 
@@ -406,10 +390,10 @@ def gen_index_charge(ndx_pickle='Qndx.pickle',prefix=''):
 
     Parameters
     ----------
-    ndx_pickle: str, optional
-        Filename of the output pickled file. (default value is 'Qndx.pickle')
-    prefix: str
-        Prefix for DNA and PEI name. (default value is '')
+    ndx_pickle: str, Optional
+        Filename of the output pickled file. (Default 'Qndx.pickle')
+    prefix: str, Optional
+        See connMat.gro2connected(). (Default '')
 
     Writes
     ------
@@ -456,8 +440,8 @@ def gen_index_mol(ndx_pickle='molndx.pickle'):
 
     Parameters 
     ----------
-    ndx_pickle: str, optional
-        Filename of the output pickled file. (default value is 'molndx.pickle')
+    ndx_pickle: str, Optional
+        Filename of the output pickled file. (Default 'molndx.pickle')
 
     Writes
     ------
@@ -502,12 +486,12 @@ def write_index_mol(outname,ndx_pickle='molndx.pickle',prefix=''):
     Parameters
     ----------
     outname: str
-         Output filename. Should end with '.ndx'.
-    ndx_pickle: str, optional
-        Filename of the pickled Gromacs index file. For details see 
-        gmx.gen_index_mol(). (default value is 'molndx.pickle')
-    prefix: str
-        Prefix to the name of DNA and PEI. (default value is '')
+        Output filename. Should end with '.ndx'.
+    ndx_pickle: str, Optional
+        See gen_index_mol(). (Default 'molndx.pickle')
+    prefix: str, Optional
+        See connMat.gro2connected(). (Default '')
+
     Writes
     ------
     [outname]: Gromacs .ndx file format
@@ -551,10 +535,7 @@ def read_ndx(filename,ndx_pickle='molndx.pickle',prefix=''):
     ----------
     filename: str
         Name of the index file
-    out_pickle: str, optional
-        Filename of the output pickled file. (default value is 'molndx.pickle')
-    prefix: str
-        Prefix for DNA and PEI name. (default value is '')
+    For other parameters, see write_index_mol()
 
     Writes
     ------

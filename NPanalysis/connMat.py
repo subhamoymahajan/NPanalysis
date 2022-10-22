@@ -39,30 +39,29 @@ def gro2connected(inGRO='DP',connected_pickle='connected.pickle',
 
     Parameter
     ---------
-    inGRO: str, optional
+    inGRO: str, Optional
         The starting strings of input Gromacs structure files. Files 
         [inGRO][t].gro are read, where [t] is the simulation time. Molecules 
         must be whole in the .gro files.These can be generated using 
-        'gmx trjconv -pbc whole -sep' (default value is 'DP')
-    connected_pickle: str, optional
-        Filename to save pickled connection matrix data.
-        (default value is 'connected.pickle')
-    ndx_pickle: str, optional
+        'gmx trjconv -pbc whole -sep' (Default 'DP')
+    connected_pickle: str, Optional
+        Filename to save pickled connection matrix data. 
+        (Default 'connected.pickle')
+    ndx_pickle: str, Optional
         Filename of the pickled Gromacs index file. See gmx.gen_index_mol() for 
-        more details. (default value is 'molndx.pickle')
-    time_shift: float, optional
-        Shift the simulation time by a constant (after scaling). 
-        (default value is 0)
-    time_fac: float, optional
-        Multiply the simulation time by a factor. (default valus is 1)
-    time_pickle: str, optional
-        Filename to save the pickled simulation time. 
-        (default value is 'time.pickle')
-    mindist_pickle: str, optional
+        more details. (Default 'molndx.pickle')
+    time_shift: float, Optional
+        Shift the simulation time by a constant (after scaling. (Default 0)
+    time_fac: float, Optional
+        Multiply the simulation time by a factor. (Default 1)
+    time_pickle: str, Optional
+        Filename to save the pickled simulation time. (Default 'time.pickle')
+    mindist_pickle: str, Optional
         Filename of save pickled minimum distance data. 
-        (default value is 'mindist.pickle')
-    prefix: str, optional
-        Prefix for DNA and PEI name. (default value is '')
+        (Default 'mindist.pickle')
+    prefix: str, Optional
+        Prefix for DNA and PEI name. (Default '')
+
     Writes
     ------
     [connected_pickle]: pickled 3D numpy ndarry of bool. 
@@ -149,12 +148,10 @@ def mindist2connected(connected_pickle='connected.pickle', \
 
     Parameters
     ----------
-    connected_pickle: str, optional
-        The output filename for pickled connection matrix data. 
-        (default value is 'connected.pickle')
-    mindist_pickle: str, optional
-        Filename of the pickled minimum distance data. For details see 
-        connMat.groconnected(). (default value is 'mindist.pickle')
+    connected_pickle: str, Optional
+        See gro2connected() (Default 'connected.pickle')
+    mindist_pickle: str, Optional
+        See gro2connected(). (Default 'mindist.pickle')
     
     Writes
     ------
@@ -177,11 +174,10 @@ def write_connMat(connected_pickle='connected.pickle', outheader='connected'):
 
     Parameters
     ----------
-    connected_pickle: str, optional
-        Filename which contains pickled connection matrix data. For details see
-        connMat.gro2connected(). (default value is 'connected.pickle')
-    outheader: str, optional
-        Starting strings of output file name. (default value is 'connected')
+    connected_pickle: str, Optional
+        See gro2connected(). (Default 'connected.pickle')
+    outheader: str, Optional
+        Starting strings of output file name. (Default 'connected')
 
     Writes
     ------
@@ -204,7 +200,7 @@ def write_connMat(connected_pickle='connected.pickle', outheader='connected'):
         w.close()
     
  
-def get_roles(avg_step, connected_pickle='connected.pickle', mol = 1, \
+def get_roles(avg_step, connected_pickle='connected.pickle', main_mol = 1, 
     time_pickle='time.pickle', outname='PEI_roles.dat', sep=" "): 
     """Calculates the average number of molecules (PEI or DNA) in each role:
        free, peripheral, and bridging as a function of time.  
@@ -213,19 +209,18 @@ def get_roles(avg_step, connected_pickle='connected.pickle', mol = 1, \
     ----------
     avg_step: int
         Number of timesteps over which the average is evaluated
-    connected_pickle: str, optional
-        Filename which contains pickled connection matrix data. For details see
-        connMat.gro2connected(). (default value is 'connected.pickle')
-    mol: int, optional
+    connected_pickle: str, Optional
+        See gro2connected(). (Default 'connected.pickle')
+    main_mol: int, Optional
         Decides the molecule for which roles, free, peripheral, and bridging are
-        calculated. 0 is for DNA, and 1 is for PEI. (default value is 1)
-    time_pickle: str, optional
-        Filename which contains the pickled simulation time data. For details 
-        see connMat.gro2connected(). (default value is 'time.pickle')
-    outname: str, optional
-        Output file name. (default value is 'PEI_roles.dat')
-    sep: str, optional
-        A string that separates data elements. (default value is ' ') 
+        calculated. 0 is for DNA, and 1 is for PEI. (Default 1)
+    time_pickle: str, Optional
+        See gro2connected(). (Default 'time.pickle')
+    outname: str, Optional
+        Output file name. (Default 'PEI_roles.dat')
+    sep: str, Optional
+        See __init__.cat_pickle(). (Default ' ') 
+
     Writes
     ------
     [outname]: txt file format
@@ -247,21 +242,21 @@ def get_roles(avg_step, connected_pickle='connected.pickle', mol = 1, \
     #
     # To get number of PEIs connected to a DNA ID at a given time, connected
     # should be summed over axis 2.
-    if mol==1: #PEI
+    if main_mol==1: #PEI
         roles=np.sum(connected,axis=1) #sum over DNA axis
         w.write("# Bridging molecule is "+pei_name+'\n')
-    elif mol==0: #DNA
+    elif main_mol==0: #DNA
         roles=np.sum(connected,axis=2) #sum over PEI axis
         w.write("# Bridging molecule is "+dna_name+'\n')
 
-    # Free molecules: PEIs not bound to any DNAs (mol=1) or DNAs not bound to
-    #                 any PEis (mol=0) 
+    # Free molecules: PEIs not bound to any DNAs (main_mol=1) or DNAs not bound to
+    #                 any PEIs (main_mol=0) 
     free=np.sum((roles==0),axis=1)
-    # Peripheral molecules: PEIs connected to exactly one DNA (mol=1) or
-    #                       DNAs connected to exactly one PEI (mol=0)
+    # Peripheral molecules: PEIs connected to exactly one DNA (main_mol=1) or
+    #                       DNAs connected to exactly one PEI (main_mol=0)
     peri=np.sum((roles==1),axis=1)
-    # Bridging molecules: PEIs connected to more than one DNA (mol=1) or
-    #                     DNAs connected to more than one PEI (mol=0)
+    # Bridging molecules: PEIs connected to more than one DNA (main_mol=1) or
+    #                     DNAs connected to more than one PEI (main_mol=0)
     bri=np.sum((roles>1),axis=1)
      
     w.write('#time'+sep+'number_of_free'+sep+'number_of_peripheral'+ \
@@ -269,42 +264,28 @@ def get_roles(avg_step, connected_pickle='connected.pickle', mol = 1, \
     for t in range(int(times/avg_step)):
         t1=t*avg_step
         t2=(t+1)*avg_step
-        tavg=np.average(sim_time[t1:min(t2,times-1)])
+        tavg=np.average(sim_time[t1:min(t2,times)])
         w.write( str(round(tavg,4)) + sep + \
            str(round(np.average(free[t1:t2+1]),4)) + sep + \
            str(round(np.average(peri[t1:t2+1]),4)) + sep + \
            str(round(np.average(bri[t1:t2+1]),4)) + '\n')
     w.close()
 
-def get_roles2(avg_step, connected_pickle='connected.pickle', mol = 0, \
+def get_roles2(avg_step, connected_pickle='connected.pickle', main_mol = 0, 
     time_pickle='time.pickle', outname='PEI_roles2.dat', sep=" "):
     """Calculates the average number of bridging molecules between bridged 
        molecule pairs and number of bridged molecule pairs as a function
        of time. 
   
-    mol=0 => average number of bridging PEI between bridged DNA pair, number of
-             bridged DNA pairs.
-    mol=1 => average number of bridging DNA between bridged PEI pair, number of
-             bridged PEI pairs.
+    main_mol=0 => average number of bridging PEI between bridged DNA pair,
+                  number of bridged DNA pairs.
+    main_mol=1 => average number of bridging DNA between bridged PEI pair, 
+                  number of bridged PEI pairs.
 
     Parameters
     ----------
-    avg_step: int
-        Number of timesteps over which the average is evaluated
-    connected_pickle: str, optional
-        Filename which contains pickled connection matrix data. For details see
-        connMat.gro2connected(). (default value is 'connected.pickle')
-    mol: int, optional
-        Decides the molecule for which roles are calculated. 0 is for DNA, and
-        1 is for PEI. (default value is 1)
-    time_pickle: str, optional
-        Filename which contains the pickled simulation time data. For details 
-        see connMat.gro2connected(). (default value is 'time.pickle')
-    outname: str, optional
-        Output file name. (default value is 'PEI_roles2.dat')
-    sep: str, optional
-        A string that separates data elements. (default value is ' ')
- 
+    See get_roles() 
+
     Writes
     ------
     [outname]: txt file format
@@ -322,24 +303,24 @@ def get_roles2(avg_step, connected_pickle='connected.pickle', mol = 0, \
     const=connected.shape
     w=open(outname,"w")
 
-    if mol==1: #PEI
+    if main_mol==1: #PEI
         w.write("# Bridging molecule is "+pei_name+'\n')
-    elif mol==0: #DNA
+    elif main_mol==0: #DNA
         w.write("# Bridging molecule is "+dna_name+'\n')
 
     w.write('#time'+sep+'average_number_of_bridges_between_pairs'+sep+ \
         'number_of_bridged_pairs\n')
-    for t in range(int(const[0]/avg_step)*avg_step+1):
+    for t in range(const[0]):
         if t%avg_step==0: #Initialize average to value to zero 
             avg_bri=0 #Average number of bridges between molecule pairs
             m2m=0 #Number of molecule pairs
         #Itereate over molecule pairs. Avoid double counting.
-        for m1 in range(const[2-mol]-1):
-            for m2 in range(m1+1,const[2-mol]):
-                if mol==1:
+        for m1 in range(const[2-main_mol]-1):
+            for m2 in range(m1+1,const[2-main_mol]):
+                if main_mol==1:
                     #Number of bridgeing PEI between a DNA pair.
                     bri=np.sum(np.multiply(connected[t,m1,:],connected[t,m2,:]))
-                elif mol==0:
+                elif main_mol==0:
                     #Number of bridgeing DNA between a PEI pair.
                     bri=np.sum(np.multiply(connected[t,:,m1],connected[t,:,m2]))
                 if bri>0:
@@ -353,23 +334,15 @@ def get_roles2(avg_step, connected_pickle='connected.pickle', mol = 0, \
                 str(round(avg_bri,4)) + sep + str(round(m2m,4)) + '\n')
     w.close()  
  
-def get_role_conversion(connected_pickle='connected.pickle', mol=1, \
+def get_role_conversion(connected_pickle='connected.pickle', main_mol=1, \
     outname='role_conv.dat',sep=' '):
     """ Calculates total number of conversions between each rol (unbound,
         peripheral, and bridging) in consecutive timesteps.
 
     Parameters
     ----------
-    connected_pickle: str, optional
-        Filename which contains pickled connection matrix data. For details see
-        connMat.gro2connected(). (default value is 'connected.pickle')
-    mol: int, optional
-        Decides the molecule for which roles are calculated. 0 is for DNA, and
-        1 is for PEI. (default value is 1)
-    outname: str, optional
-        Output file name. (default value is 'role_conv.dat')
-    sep: str, optional
-        A string that separates data elements. (default value is ' ')
+    See get_roles()
+
     Writes
     ------
     [outname]: txt file format
@@ -384,24 +357,24 @@ def get_role_conversion(connected_pickle='connected.pickle', mol=1, \
     # 0,1,2 implies free, peripheral, and bridging
     # role_conv[i,j] implies conversion from i-> j
     # conversions i->i (diagonal terms) should be ignored. 
-    roles=np.sum(connected,axis=2-mol)
+    roles=np.sum(connected,axis=2-main_mol)
     constants=nx.read_gpickle('constants.pickle')
     dna_name=constants['dna_name']
     pei_name=constants['pei_name']
 
 
     for t in range(consts[0]):
-        for m in range(consts[1+mol]):
+        for m in range(consts[1+main_mol]):
             if roles[t,m]>1:
                 roles[t,m]=2
     for t in range(consts[0]-1):
-        for m in range(consts[1+mol]):
+        for m in range(consts[1+main_mol]):
             if roles[t+1,m]!=roles[t,m]:
                 role_conv[roles[t,m],roles[t+1,m]]+=1
     w=open(outname,'w')
-    if mol==1: #PEI
+    if main_mol==1: #PEI
         w.write("# Bridging molecule is "+pei_name+'\n')
-    elif mol==0: #DNA
+    elif main_mol==0: #DNA
         w.write("# Bridging molecule is "+dna_name+'\n')
     w.write('#u->p\tp->b\tu->b\n')
     w.write(str(role_conv[0,1])+sep+str(role_conv[1,2])+sep+\
