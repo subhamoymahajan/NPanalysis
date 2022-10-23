@@ -168,7 +168,7 @@ def calc_MOI(pos, atoms, mass):
     Returns
     -------
     MOI: 3x3 numpy ndarray of floats
-        Moment of interita tensor for a specific time
+        Moment of interita tensor for a specific time. Units amu.nm2
     """
     pos_atoms=pos[atoms,:]
     mass_atoms=mass[atoms]
@@ -307,9 +307,14 @@ def NP_shape(cluster, inGRO='New.gro', ndx_pickle='molndx.pickle', prefix=''):
     pname=prefix+constants['pei_name']
     dname=prefix+constants['dna_name']
     ndx=nx.read_gpickle(ndx_pickle)
+    catoms=[]
+    for d in cluster[0]:
+        catoms+=list(ndx[dname+str(d)])
+    for p in cluster[1]:
+        catoms+=list(ndx[pname+str(p)])
+
     pos,box,text=gmx.read_gro(inGRO)
-    catoms=gmx.get_NPatomIDs(cluster,ndx,dna_name,pei_name,main_mol)
-    b,c,k2=NP_shape2(pos[atoms])
+    b,c,k2=NP_shape2(pos[catoms])
     print('asphericity: '+str(round(b,4)))
     print('acylindricity: '+str(round(c,4)))
     print('relative shape anisotropy: '+str(round(k2,4)))

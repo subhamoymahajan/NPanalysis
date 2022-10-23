@@ -2,10 +2,10 @@ import NPanalysis as NPa
 import networkx as nx
 import numpy as np
 print("Part 1: Calculating Role Conversion\n")
-NPa.connMat.get_role_conversion(connected_pickle='connected.pickle', mol=1, \
+NPa.connMat.get_role_conversion(connected_pickle='connected.pickle', main_mol=1, \
     outname='role_conv.dat',sep=',')
 
-print("Part 2: NP Moment of Inertia\n")
+print("Part 2: NP Moment of Inertia (amu.nm^2)\n")
 pos,box,text=NPa.gmx.read_gro('NPwhole/DP250.gro')
 clusters=nx.read_gpickle('cluster.pickle')
 constants=nx.read_gpickle('constants.pickle')
@@ -17,10 +17,10 @@ mass=nx.read_gpickle('mass.pickle')
 MOI=NPa.radius.calc_MOI(pos, atoms, mass)
 print(MOI)
 
-print("Part 3: NP shape descriptors")
+print("Part 3: NP shape descriptors of last timestep.")
+#cluster[-1] is clusters in the last timestep. cluster[-1][1] is the second NP in last timestep.
 NPa.radius.NP_shape(clusters[-1][1],inGRO='NPwhole/DP250.gro', \
                     ndx_pickle='molndx.pickle')
-
 print("Part 4: Mindist between Charged particles")
 NPa.gmx.gen_index_charge('Qndx.pickle',prefix='Q')
 NPa.gmx.write_index_mol('Qndx.ndx',ndx_pickle='Qndx.pickle',prefix='Q')
