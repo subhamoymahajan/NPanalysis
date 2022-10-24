@@ -21,6 +21,6 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Chemistry",
         "Topic :: Scientific/Engineering :: Physics",
    ],
-   python_requires='=3.7'
+   python_requires='>=3.7'
 )
 
