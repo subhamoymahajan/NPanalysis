@@ -48,4 +48,38 @@ Create a `constants.dat` file. This has been created for the tutorial.
 run the python script.
 ```bash
 python calc.py
-``` 
+```
+
+
+### Changes
+
+- `mol` parameters changed to `main_mol` in `get_roles()` and `get_roles2()`
+
+- Averaging corrected for `get_roles()`, `get_roles2()`, `gen_avgsize()`, `gen_avg_rad()` with `avg_step=0`. When `avg_step=0`, no averaging is performed.
+
+- Average of radius was performed from 0 to current timestep. This unintended averageing is also corrected. Consequently the data shown in the PDF is different. Untill I change the PDF please refer to the values below.
+
+`avg_Rh.dat`
+
+```bash
+#time,avg_radius,std_error
+0.05,3.3362,1.16
+0.15,4.1962,1.3525
+0.25,4.4763,1.5435
+0.35,5.0656,2.5462
+0.45,4.8436,2.3451
+```
+
+`avg_Rg.dat`
+
+```bash
+#time,avg_radius,std_error
+0.05,2.0986,1.4487
+0.15,2.609,1.6152
+0.25,2.8437,1.6863
+0.35,3.4775,1.8648
+0.45,3.1621,1.7782
+```
+
+
+ 

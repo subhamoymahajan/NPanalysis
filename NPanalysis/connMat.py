@@ -261,14 +261,19 @@ def get_roles(avg_step, connected_pickle='connected.pickle', main_mol = 1,
      
     w.write('#time'+sep+'number_of_free'+sep+'number_of_peripheral'+ \
         sep+'number_of_bridging\n')
-    for t in range(int(times/avg_step)):
-        t1=t*avg_step
-        t2=(t+1)*avg_step
-        tavg=np.average(sim_time[t1:min(t2,times)])
-        w.write( str(round(tavg,4)) + sep + \
-           str(round(np.average(free[t1:t2+1]),4)) + sep + \
-           str(round(np.average(peri[t1:t2+1]),4)) + sep + \
-           str(round(np.average(bri[t1:t2+1]),4)) + '\n')
+    if avg_step==0:
+        for t in range(times):
+            w.write(str(round(sim_time[t],4)) + sep + str(free[t]) + sep + 
+                str(peri[t]) + sep + str(bri[t]) + '\n')
+    else:
+        for t in range(int(times/avg_step)):
+            t1=t*avg_step
+            t2=(t+1)*avg_step
+            tavg=np.average(sim_time[t1:min(t2+1,times)])
+            w.write( str(round(tavg,4)) + sep + \
+               str(round(np.average(free[t1:t2+1]),4)) + sep + \
+               str(round(np.average(peri[t1:t2+1]),4)) + sep + \
+               str(round(np.average(bri[t1:t2+1]),4)) + '\n')
     w.close()
 
 def get_roles2(avg_step, connected_pickle='connected.pickle', main_mol = 0, 
@@ -311,7 +316,10 @@ def get_roles2(avg_step, connected_pickle='connected.pickle', main_mol = 0,
     w.write('#time'+sep+'average_number_of_bridges_between_pairs'+sep+ \
         'number_of_bridged_pairs\n')
     for t in range(const[0]):
-        if t%avg_step==0: #Initialize average to value to zero 
+        if avg_step==0:
+            avg_bri=0
+            m2m=0 
+        elif t%avg_step==0: #Initialize average to value to zero 
             avg_bri=0 #Average number of bridges between molecule pairs
             m2m=0 #Number of molecule pairs
         #Itereate over molecule pairs. Avoid double counting.
@@ -326,10 +334,13 @@ def get_roles2(avg_step, connected_pickle='connected.pickle', main_mol = 0,
                 if bri>0:
                     avg_bri+=bri
                     m2m+=1
-        if t%avg_step==avg_step-1 or t==const[0]-1:
+        if avg_step==0:
+            w.write(str(round(sim_time[t],4)) + sep + str(round(avg_bri/(m2m+small),4)) +
+                    sep + str(round(m2m,4)) + '\n')
+        elif t%avg_step==avg_step-1:
             avg_bri/=float(m2m+small) #Average over molecule pairs
             m2m/=float(avg_step) #Average over time
-            tavg=np.average(sim_time[int(t/avg_step)*avg_step:t+1])
+            tavg=np.average(sim_time[int(t/avg_step)*avg_step:t+2])
             w.write(str(round(tavg,4)) + sep + \
                 str(round(avg_bri,4)) + sep + str(round(m2m,4)) + '\n')
     w.close()  

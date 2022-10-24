@@ -1,5 +1,3 @@
-import sys
-sys.path.insert(0,'../')
 import NPanalysis.geometry as geo
 import numpy as np
 import unittest

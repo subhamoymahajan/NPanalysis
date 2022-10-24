@@ -34,7 +34,7 @@ NPa.cluster.gen_ncNP_s(3,'num_charge_NPs_size.dat', main_mol=0, sep=' ',
 
 ##4.Calculate Radius
 ##Make nanoparticles whole
-#print("Step 4: Making Nanoparticles Whole and calculating Radii\n")
+print("Step 4: Making Nanoparticles Whole and calculating Radii\n")
 NPa.gmx.make_NPwhole(inGRO='Whole/DP',outGRO='NPwhole/DP', 
     cluster_pickle='cluster.pickle', connected_pickle='connected.pickle', 
     ndx_pickle='molndx.pickle')

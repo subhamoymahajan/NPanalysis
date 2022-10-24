@@ -378,6 +378,65 @@ def NP_shape_all(shape_pickle='shape.pickle', inGRO='New', sep=' ', \
     print('Writing: '+shape_pickle)
     nx.write_gpickle(shape,shape_pickle)
 
+
+def NP_shape_avg(avg_step, shape_pickle='shape.pickle', sep=' ',
+    outname='shape.dat', NP_ID=None):
+    """ Calculates NP shape descriptors asphericitym, acylindricity, and 
+        relative shape anisotropy for all NP at all time.
+    
+    The descriptors are summarized in: 
+    https://en.wikipedia.org/wiki/Gyration_tensor
+    published article DOI:https://doi.org/10.1021/ma00148a028
+
+    Parameters
+    ----------
+    For other parameters see NP_shape_all().
+    Writes
+    ------
+    [shape_pickle]:
+        Axis 0 is timestep, Axis 1 is cluster ID, Axis 2 stores [0] aspericity
+        [1] acylindirciy, and [2] relative shape anisotropy
+    """
+
+    if type(shape_pickle)==str:
+        shape=nx.read_gpickle(shape_pickle)
+    else: 
+        shape=shape_pickle
+
+    times=len(shape)
+    w=open(outname,'w')
+    w.write('#Time,avg b, std, avg c, std, avg k2, std\n')
+    for t in range(times):
+        if avg_step==0:
+            bs,cs,k2s=[],[],[]
+        elif t%avg_step==0:
+            bs,cs,k2s=[],[],[]
+
+        if NP_ID is None:
+            for x in range(len(shape[t])):
+                bs.append(shape[t][x][0])     
+                cs.append(shape[t][x][1])     
+                k2s.append(shape[t][x][2])     
+        else:
+            bs.append(shape[t][NP_ID][0])     
+            cs.append(shape[t][NP_ID][1])     
+            k2s.append(shape[t][NP_ID][2])     
+
+        if avg_step==0:
+            w.write(str(round(sim_time[t],4)) + sep + 
+                str(round(np.average(bs),4)) + sep + str(round(np.std(bs),4)) +
+                sep + str(round(np.average(cs),4)) + sep +
+                str(round(np.std(cs),4)) + sep + str(round(np.average(k2s),4)) +
+                sep + str(round(np.std(k2s),4)) + '\n')
+        else:
+            tavg=np.average(sim_time[int(t/avg_step)*avg_step:t+2])
+            w.write(str(round(tavg,4)) + sep + 
+                str(round(np.average(bs),4)) + sep + str(round(np.std(bs),4)) +
+                sep + str(round(np.average(cs),4)) + sep +
+                str(round(np.std(cs),4)) + sep + str(round(np.average(k2s),4)) +
+                sep + str(round(np.std(k2s),4)) + '\n')
+    w.close()
+
 def calc_Rh_Rg(Rh_pickle='Rh.pickle', Rg2_pickle='Rg.pickle', inGRO='New',\
     mass_pickle='mass.pickle', cluster_pickle='cluster.pickle', main_mol = 0, \
     ndx_pickle='molndx.pickle', sep=' ',prefix=''):
@@ -461,7 +520,7 @@ def calc_Rh_Rg(Rh_pickle='Rh.pickle', Rg2_pickle='Rg.pickle', inGRO='New',\
         nx.write_gpickle(Rg2_data,Rg2_pickle)
     print("\n"+foo)
 
-def gen_rad_avg(rad_pickle,avg_len,outname,sep=' ',time_pickle='time.pickle', \
+def gen_rad_avg(rad_pickle,avg_step,outname,sep=' ',time_pickle='time.pickle', \
     sqrt=False):
     """Calculates the average radius over time
     
@@ -470,7 +529,7 @@ def gen_rad_avg(rad_pickle,avg_len,outname,sep=' ',time_pickle='time.pickle', \
     rad_pickle: pickled 2D list of floats or integers
         Contains radius values (Ex: Rh, Rg) at different timesteps and for 
         different nanoparticles
-    avg_len: int
+    avg_step: int
         Number of timesteps over which the average is evaluated
     outname: str 
         Output filename
@@ -498,16 +557,26 @@ def gen_rad_avg(rad_pickle,avg_len,outname,sep=' ',time_pickle='time.pickle', \
     w=open(outname,'w')
     w.write('#time'+sep+'avg_radius'+sep+'std_error\n')
     for t in range(times):
-        if t==0:
+        if avg_step==0:
             R=[]
-        R=R+rad[t] 
-        if t%avg_len==avg_len-1 or t==times-1:
+        elif t%avg_step==0:
+            R=[]
+        R=R+rad[t]
+        if avg_step==0:
+            avg=np.average(R)
+            std=np.std(R)
+            if sqrt:
+                avg=np.sqrt(avg)
+                std=np.sqrt(std)
+            w.write(str(round(sim_time[t],4)) + sep + 
+                str(round(avg,4)) + sep + str(round(std,4)) + '\n') 
+        elif t%avg_step==avg_step-1:
             avg=np.average(R)
             std=np.std(R)
             if sqrt:
                 avg=np.sqrt(avg)
                 std=np.sqrt(avg)
-            tavg=np.average(sim_time[int(t/avg_len)*avg_len:t+1])
+            tavg=np.average(sim_time[int(t/avg_step)*avg_step:t+2])
             w.write(str(round(tavg,4))+sep+str(round(avg,4))+sep+ \
                 str(round(std,4))+'\n')
     w.close()
@@ -561,10 +630,10 @@ def gen_rad_per_size(rad_pickle, outname, t1, t2, sep=' ', main_mol=0, \
 
     # N is the total number of main molecules in the simulation.
     if main_mol==0:
-        N=ndna
+        N=ndna+1
         w.write("# Main molecule is "+dna_name+"\n")
     elif main_mol==1:
-        N=npei
+        N=npei+1
         w.write("# Main molecule is "+pei_name+"\n")
     else:
         raise Exception("Incorrect main molecule ID. Only takes 0 or 1.")

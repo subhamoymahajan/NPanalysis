@@ -251,7 +251,9 @@ def get_NPatomIDs(clusters, ndx, dna_name, pei_name, main_mol=0, NP_ID=None):
     Returns
     -------
     atoms: numpy array of integers
-       List of global IDs of atom 
+       List of global IDs of atom. If NP_ID is none, atom IDs of all clusters 
+       are returned as an array. E;se atom IDs of only NP with NP_ID is 
+       returned.
     """
     atoms=[]
     if NP_ID==None:

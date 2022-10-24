@@ -306,6 +306,9 @@ def gen_avgsize(avg_step, outname, main_mol=0, time_pickle='time.pickle', \
        
     w.write('#time'+sep+'number_average_size'+sep+'weight_average_size\n')
     for t in range(times):
+        if avg_step==0:
+            nclust=0
+            wavg=0
         if t%avg_step==0:
             nclust=0  #Number of clusters
             wavg=0  #Weight average cluster size
@@ -316,11 +319,15 @@ def gen_avgsize(avg_step, outname, main_mol=0, time_pickle='time.pickle', \
         wavg+=np.sum(np.square(nMains[:-2]))+nMains[-2+main_mol]
         # Length of nMains ignoring last two rows + number of free molecules
         nclust+=len(nMains)-2+nMains[-2+main_mol]
-        if t%avg_step==avg_step-1 or t==times-1:
+        if avg_step==0:
+            w.write(str(round(sim_time[t],4)) + sep + 
+                str(round(N/float(nclust),4)) + sep + 
+                str(round(wavg/float(N),4)) + '\n')
+        elif t%avg_step==avg_step-1:
             #print((t+1)*dt)
             navg=float(N*avg_step)/float(nclust) #Number average size
             wavg=wavg/(N*float(avg_step)) #Weight average size
-            tavg=np.average(sim_time[int(t/avg_step)*avg_step:t+1])
+            tavg=np.average(sim_time[int(t/avg_step)*avg_step:t+2])
             w.write(str(round(tavg,4)) + sep + \
                 str(round(navg,4)) + sep + str(round(wavg,4)) + '\n')
     w.close()
@@ -1203,7 +1210,7 @@ def get_weighted_NSGs(wNSG_pickle='wNSG.pickle', GPT_pickle='GPT.pickle',
         if type(UID)==str:
             continue
 
-        print("Working on Node "+str(UID)+" ",end="\n")
+        print("Working on Node "+str(UID)+" ",end="\r")
         G=UniqNSGs[UID]
         Gnodes=list(G.nodes)
         Gedges=list(G.edges)
@@ -1218,8 +1225,6 @@ def get_weighted_NSGs(wNSG_pickle='wNSG.pickle', GPT_pickle='GPT.pickle',
         cnt_p=0
         cnt_s=0
         wNSGs[UID]={}
-        print('preds_times',preds_times)
-        print('succs_times',succs_times)
 
         while (cnt_p<len(preds_times) and cnt_s<len(succs_times)) or (cnt_p==0 and cnt_s==0):
             time=[]
@@ -1237,7 +1242,6 @@ def get_weighted_NSGs(wNSG_pickle='wNSG.pickle', GPT_pickle='GPT.pickle',
             else:
                 time.append(succs_times[cnt_s][1])
             time=np.round(time,rnd_off)
-            print('Time: '+str(time[0])+'-'+str(time[1]))
             # Calculate average number of bridges between every M-molecule 
             # pairs in the given UID
             cnt=0 #Total number of timesteps UID exists
@@ -1252,7 +1256,6 @@ def get_weighted_NSGs(wNSG_pickle='wNSG.pickle', GPT_pickle='GPT.pickle',
                     G_t[e1][e2]['nb']+=bris[(e1,e2)]
                 if len(bris.keys())>0:
                     cnt+=1
-            print(i1,i2,cnt)
             for e1,e2 in Gedges:
                 G_t[e1][e2]['nb']/=float(cnt)
 
@@ -1360,7 +1363,6 @@ def get_cur_next_UIDs(UID, GPT, wNSGs, rnd_off=4):
         if len(next_UIDs_t)>0:
             H2_t=nx.Graph()           
             for i in range(len(next_UIDs_t)):
-                print(wNSGs[next_UIDs_t[i]])
                 H2_t=nx.union(H2_t,wNSGs[next_UIDs_t[i]][tuple(np.round(xtime,rnd_off))])
         cnt_p+=add[0]
         cnt_s+=add[1]
@@ -1674,8 +1676,6 @@ def plot_GPT_NSG(UID, GPT_pickle='GPT.pickle', wNSG_pickle='wNSG.pickle',\
     pos_nodes={}
     dt=sim_time[1]-sim_time[0]
     cur_UIDs, next_UIDs, H1s, H2s, times=get_cur_next_UIDs(UID,  GPT, wNSGs)
-    print('Current UIDs',cur_UIDs)
-    print('Next UIDs',next_UIDs)
    
     
     for i in range(len(H1s)):
