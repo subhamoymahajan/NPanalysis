@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
    name="NPanalysis",
-   version="1.3.dev1",
+   version="1.3.",
    author="Subhamoy Mahajan",
    description="Analysis module for two-component nanoparticles",
    url="https://github.com/subhamoymahajan/NPanalysis",
@@ -21,6 +21,6 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Chemistry",
         "Topic :: Scientific/Engineering :: Physics",
    ],
-   python_requires='>=3.7'
+   python_requires='=3.7'
 )
 

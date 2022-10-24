@@ -1,6 +1,6 @@
 # This Program is used to analyze properties of two-component nanoparticle. It 
 # is primarily designed to assist Gromacs analysis 
-#    Copyright (C) 2021 Subhamoy Mahajan
+#    Copyright (C) 2022 Subhamoy Mahajan
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,10 @@
 #     Affects Their Nanoparticle Formation: A Large-Scale Coarse-Grained 
 #     Molecular Dynamics Study", 2019, J. Phys. Chem. B, 123 (45), 9629-9640, 
 #     DOI: https://doi.org/10.1021/acs.jpcb.9b07031
+#
+# (2) Subhamoy Mahajan and Tian Tang, "Polyethylenimine-DNA Nanoparticles under
+#     Endosomal Acidification and Implication to Gene Delivery", 2022, Langmuir,
+#     38 (27), 8382-8397, DOI: https://doi.org/10.1021/acs.langmuir.2c00952
 #
 
 import networkx as nx
