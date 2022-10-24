@@ -19,10 +19,16 @@ gmx make_ndx -f big_fle.gro -o index.ndx << EOF
 q
 EOF
 ```
+
+Make molecules whole.
+```bash
+echo "0" | gmx trjconv -f big_file.xtc -s big_file.tpr -pbc whole -n index.ndx -o big_whole.xtc
+``` 
+
 Extract the smaller system. The name of the group will be different in your systems.
 
 ```bash
-echo "DNA_PEI_ION" | gmx trjconv -f big_file.xtc -s big_file.tpr -n index.ndx -o md_1.xtc
+echo "DNA_PEI_ION" | gmx trjconv -f big_whole.xtc -s big_file.tpr -pbc whole -n index.ndx -o md_1.xtc
 ``` 
 
 Convert the tpr.
@@ -39,7 +45,7 @@ Extract trajectories while making molecules whole.
 
 ```bash
 mkdir -p Whole
-echo "0" | gmx trjconv -f md_1.xtc -s md_1.tpr -pbc whole -o Whole/DP.gro -sep
+echo "0" | gmx trjconv -f md_1.xtc -s md_1.tpr -o Whole/DP.gro -sep
 gmx dump -s md_1.tpr > tpr. dump
 ```
 
@@ -57,29 +63,5 @@ python calc.py
 
 - Averaging corrected for `get_roles()`, `get_roles2()`, `gen_avgsize()`, `gen_avg_rad()` with `avg_step=0`. When `avg_step=0`, no averaging is performed.
 
-- Average of radius was performed from 0 to current timestep. This unintended averageing is also corrected. Consequently the data shown in the PDF is different. Untill I change the PDF please refer to the values below.
-
-`avg_Rh.dat`
-
-```bash
-#time,avg_radius,std_error
-0.05,3.3362,1.16
-0.15,4.1962,1.3525
-0.25,4.4763,1.5435
-0.35,5.0656,2.5462
-0.45,4.8436,2.3451
-```
-
-`avg_Rg.dat`
-
-```bash
-#time,avg_radius,std_error
-0.05,2.0986,1.4487
-0.15,2.609,1.6152
-0.25,2.8437,1.6863
-0.35,3.4775,1.8648
-0.45,3.1621,1.7782
-```
-
-
+- Average of radius was performed from 0 to current timestep. This unintended averageing is also corrected.
  
